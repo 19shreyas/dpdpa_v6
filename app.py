@@ -490,7 +490,7 @@ elif menu == "Policy Compliance Checker":
                         
                             st.markdown("### 🔍 Matched Details:")
                             for detail in result["Matched Details"]:
-                                st.markdown(f"** {detail['Checklist Item']}** — `{detail['Status']}`  \n> _{detail['Justification']}_")
+                                
                                 status_color = {
                                     "explicitly mentioned": "#198754",  # green
                                     "partially mentioned": "#FFC107",   # yellow
