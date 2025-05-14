@@ -480,6 +480,8 @@ elif menu == "Policy Compliance Checker":
                                 {match_level}
                               </span>
                             </div>
+                            """, unsafe_allow_html=True)
+
 
                         
                             st.markdown("### 📋 Checklist Items Matched:")
@@ -542,6 +544,8 @@ elif menu == "Policy Compliance Checker":
                             {match_level}
                           </span>
                         </div>
+                        """, unsafe_allow_html=True)
+
 
                     
                         st.markdown("### 📋 Checklist Items Matched:")
