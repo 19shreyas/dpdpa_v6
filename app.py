@@ -460,8 +460,27 @@ elif menu == "Policy Compliance Checker":
                         st.markdown(f"### Section {sid} — {dpdpa_checklists[sid]['title']}")
                         result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
                         with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                            st.markdown(f"**Compliance Score:** `{result['Compliance Score']}`  \n"
-                                        f"**Match Level:** `{result['Match Level']}`", unsafe_allow_html=True)
+                            # Set color for Match Level badge
+                            level_color = {
+                                "Fully Compliant": "#198754",     # green
+                                "Partially Compliant": "#FFC107", # yellow
+                                "Non-Compliant": "#DC3545"        # red
+                            }
+                            match_level = result["Match Level"]
+                            color = level_color.get(match_level, "#6C757D")  # fallback grey
+                            
+                            st.markdown(f"""
+                            <div style="margin-bottom: 1rem;">
+                              <b>Compliance Score:</b>
+                              <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                                {result["Compliance Score"]}
+                              </span><br>
+                              <b>Match Level:</b>
+                              <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                                {match_level}
+                              </span>
+                            </div>
+
                         
                             st.markdown("### 📋 Checklist Items Matched:")
                             for i, item in enumerate(result["Checklist Items Matched"]):
@@ -503,8 +522,27 @@ elif menu == "Policy Compliance Checker":
                     checklist = dpdpa_checklists[section_id]['items']
                     result = analyze_policy_section(section_id, checklist, policy_text)
                     with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                        st.markdown(f"**Compliance Score:** `{result['Compliance Score']}`  \n"
-                                    f"**Match Level:** `{result['Match Level']}`", unsafe_allow_html=True)
+                        # Set color for Match Level badge
+                        level_color = {
+                            "Fully Compliant": "#198754",     # green
+                            "Partially Compliant": "#FFC107", # yellow
+                            "Non-Compliant": "#DC3545"        # red
+                        }
+                        match_level = result["Match Level"]
+                        color = level_color.get(match_level, "#6C757D")  # fallback grey
+                        
+                        st.markdown(f"""
+                        <div style="margin-bottom: 1rem;">
+                          <b>Compliance Score:</b>
+                          <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                            {result["Compliance Score"]}
+                          </span><br>
+                          <b>Match Level:</b>
+                          <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                            {match_level}
+                          </span>
+                        </div>
+
                     
                         st.markdown("### 📋 Checklist Items Matched:")
                         for i, item in enumerate(result["Checklist Items Matched"]):
