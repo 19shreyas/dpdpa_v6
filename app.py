@@ -3,6 +3,212 @@ import openai
 import json
 import pandas as pd
 import re
+import fitz  # PyMuPDF
+
+# --- OpenAI Setup ---
+api_key = st.secrets["OPENAI_API_KEY"]
+client = openai.OpenAI(api_key=api_key)
+
+# --- Section Checklists ---
+dpdpa_checklists = {
+    "4": {
+        "title": "Grounds for Processing Personal Data",
+        "items": [
+            "Personal data is processed only for a lawful purpose.",
+            "Lawful purpose means a purpose not expressly forbidden by law.",
+            "Lawful purpose must be backed by explicit consent from the Data Principal or fall under legitimate uses."
+        ]
+    },
+    "5": {
+        "title": "Notice",
+        "items": [
+            "Notice is provided in clear and plain language.",
+            "Notice is made available before or at the time of data collection.",
+            "Notice includes the purpose of processing personal data.",
+            "Notice specifies the rights of the Data Principal.",
+            "Notice includes details of the Data Fiduciary and means to contact them.",
+            "Notice discloses the manner in which the Data Principal can exercise their rights.",
+            "Notice is accessible in English or any language listed in the Eighth Schedule of the Constitution of India."
+        ]
+    },
+    "6": {
+        "title": "Consent",
+        "items": [
+            "Consent is free (voluntary, not coerced).",
+            "Consent is specific to a clearly defined purpose.",
+            "Consent is informed (based on full information provided beforehand).",
+            "Consent is unambiguous (clearly understood and intentional).",
+            "Consent is given via clear affirmative action.",
+            "Consent is limited to the specified purpose only.",
+            "Only personal data necessary for the purpose is processed.",
+            "Consent is provided before data processing begins.",
+            "Data Principal has the ability to withdraw consent easily and at any time.",
+            "If consent is withdrawn, data processing stops and data is erased unless legally required."
+        ]
+    },
+    "7": {
+        "title": "Certain Legitimate Uses",
+        "items": [
+            "Processing is necessary for performance of any function under the law or in the interest of the sovereignty and integrity of India.",
+            "Processing is necessary for compliance with any judgment, order, or decree of any court or tribunal in India.",
+            "Processing is necessary for responding to a medical emergency involving a threat to life or health.",
+            "Processing is necessary for taking measures to ensure safety during any disaster or breakdown of public order.",
+            "Processing is necessary for purposes related to employment or provision of service.",
+            "Processing is necessary for the purpose of public interest such as prevention of fraud, network and information security, or credit scoring.",
+            "Processing is for purposes of corporate governance, mergers, or disclosures under legal obligations.",
+            "Processing is necessary for any fair and reasonable purpose specified by the Data Protection Board."
+        ]
+    },
+    "8": {
+        "title": "General Obligations of Data Fiduciary",
+        "items": [
+            "Implements appropriate technical and organizational measures to ensure compliance with DPDPA.",
+            "Maintains data accuracy and completeness to ensure it is up-to-date.",
+            "Implements reasonable security safeguards to prevent personal data breaches.",
+            "Notifies the Data Protection Board and affected Data Principals in the event of a breach.",
+            "Erases personal data as soon as the purpose is fulfilled and retention is no longer necessary.",
+            "Maintains records of processing activities in accordance with prescribed rules.",
+            "Conducts periodic Data Protection Impact Assessments if required.",
+            "Appoints a Data Protection Officer (DPO) if classified as a Significant Data Fiduciary.",
+            "Publishes the business contact information of the DPO or person handling grievances."
+        ]
+    }
+    }
+    # Add similar checklist dicts for sections 5–8
+
+# --- Block Splitter ---
+def break_into_blocks(text):
+    lines = text.splitlines()
+    blocks, current_block = [], []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if re.match(r'^([A-Z][A-Za-z\s]+|[0-9]+\.\s.*)$', stripped):
+            if current_block:
+                blocks.append(' '.join(current_block).strip())
+                current_block = []
+            current_block.append(stripped)
+        else:
+            current_block.append(stripped)
+    if current_block:
+        blocks.append(' '.join(current_block).strip())
+    return blocks
+
+# --- PDF Extractor ---
+def extract_text_from_pdf(pdf_file):
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    return "\n".join(page.get_text() for page in doc)
+
+# --- Prompt Generator ---
+def create_block_prompt(section_id, block_text, checklist):
+    checklist_text = "\n".join(f"- {item}" for item in checklist)
+    return f"""
+    You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+    
+    **Checklist:**
+    {checklist_text}
+    
+    **Policy Block:**
+    {block_text}
+    
+    Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
+    Return output in this format:
+    {{
+      "Match Level": "...",
+      "Compliance Score": 0.0,
+      "Checklist Evaluation": [
+        {{"Checklist Item": "...", "Status": "...", "Justification": "..."}}
+      ],
+      "Suggested Rewrite": "...",
+      "Simplified Legal Meaning": "..."
+    }}
+    """
+
+# --- GPT Call ---
+def call_gpt(prompt):
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+    return json.loads(response.choices[0].message.content)
+
+# --- Scoring Logic ---
+def compute_score_and_level(evaluations, total_items):
+    matched = [e for e in evaluations if e["Status"].lower() == "explicitly mentioned"]
+    partial = [e for e in evaluations if e["Status"].lower() == "partially mentioned"]
+    score = (len(matched) + 0.5 * len(partial)) / total_items if total_items else 0.0
+    if score >= 1.0:
+        level = "Fully Compliant"
+    elif score == 0:
+        level = "Non-Compliant"
+    else:
+        level = "Partially Compliant"
+    return round(score, 2), level
+
+# --- Analyzer ---
+def analyze_policy_section(section_id, checklist, policy_text):
+    blocks = break_into_blocks(policy_text)
+    all_results = []
+
+    for block in blocks:
+        prompt = create_block_prompt(section_id, block, checklist)
+        try:
+            result = call_gpt(prompt)
+            result["Block"] = block
+            all_results.append(result)
+        except:
+            continue
+
+    matched_items = {}
+
+    if section_id == "8":
+        canonical_display_map = {
+            "implements appropriate technical and organizational measures": "Implements appropriate technical and organizational measures to ensure compliance with DPDPA.",
+            "maintains data accuracy and completeness": "Maintains data accuracy and completeness to ensure it is up-to-date.",
+            "implements reasonable security safeguards": "Implements reasonable security safeguards to prevent personal data breaches.",
+            "notifies the data protection board and affected data principals in case of breach": "Notifies the Data Protection Board and affected Data Principals in the event of a breach.",
+            "erases personal data when purpose is fulfilled": "Erases personal data as soon as the purpose is fulfilled and retention is no longer necessary.",
+            "maintains records of processing activities": "Maintains records of processing activities in accordance with prescribed rules.",
+            "conducts data protection impact assessments": "Conducts periodic Data Protection Impact Assessments if required.",
+            "appoints a data protection officer": "Appoints a Data Protection Officer (DPO) if classified as a Significant Data Fiduciary.",
+            "publishes dpo contact information": "Publishes the business contact information of the DPO or person handling grievances."
+        }
+    else:
+        canonical_display_map = {}
+
+    for res in all_results:
+        for item in res.get("Checklist Evaluation", []):
+            key = item["Checklist Item"].strip().lower().replace(".", "")
+
+            if section_id == "8":
+                for match in canonical_display_map.keys():
+                    if match in key:
+                        key = match
+                        break
+
+            if "all other checklist items" in key:
+                continue
+
+            if key not in matched_items:
+                item["Checklist Item"] = canonical_display_map.get(key, item["Checklist Item"])
+                matched_items[key] = item
+
+    evaluations = list(matched_items.values())
+    score, level = compute_score_and_level(evaluations, len(checklist))
+
+    return {
+        "Section": section_id,
+        "Title": dpdpa_checklists[section_id]['title'],
+        "Match Level": level,
+        "Compliance Score": score,
+        "Checklist Items Matched": [item["Checklist Item"] for item in evaluations],
+        "Matched Details": evaluations,
+        "Suggested Rewrite": all_results[0].get("Suggested Rewrite", ""),
+        "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "")
+    }
+    
 def set_custom_css():
     st.markdown("""
     <style>
@@ -206,13 +412,16 @@ elif menu == "Policy Compliance Checker":
     
     #st.header("1. Upload Your Policy Document")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>1. Upload Your Policy Document</h3>", unsafe_allow_html=True)
-    upload_option = st.radio("Choose input method:", ["Upload File", "Paste Policy Text"], index=0)
-    if upload_option == "Upload File":
-        policy_file = st.file_uploader("Upload .docx or .txt file", type=["docx", "txt"])
-        policy_text = None
-    else:
-        policy_text = st.text_area("Paste your policy text here:", height=250)
-        policy_file = None
+
+    upload_option = st.radio("Choose input method:", ["Paste text", "Upload PDF"])
+    if upload_option == "Paste text":
+        policy_text = st.text_area("Paste your Privacy Policy text:", height=300)
+    elif upload_option == "Upload PDF":
+        uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf")
+        if uploaded_pdf:
+            policy_text = extract_text_from_pdf(uploaded_pdf)
+        else:
+            policy_text = ""
 
     #st.header("2. Choose Matching Level")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>2. Choose Matching Level</h3>", unsafe_allow_html=True)
@@ -238,176 +447,21 @@ elif menu == "Policy Compliance Checker":
     else:
         custom_industry = None
 
-    #st.header("5. Run Compliance Check")
+    section_options = list(dpdpa_checklists.keys()) + ["All Sections"]
+    section_id = st.selectbox("Choose DPDPA Section", options=section_options)
+
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>5. Run Compliance Check</h3>", unsafe_allow_html=True)
     if st.button("Run Compliance Check"):
         if policy_text:
             results = []
             with st.spinner("Running GPT-based compliance evaluation..."):
-                for section in dpdpa_sections:
-                    st.markdown(f"##### Analyzing: {section}")
-                    try:
-                        if section == "Section 4 — Grounds for Processing Personal Data":
-                            st.markdown(f"Inside if Analyzing: {section}")
-                            validated_section = analyze_policy_section4(policy_text)
-                            results.append(validated_section)
-                        elif section == "Section 5 — Notice":
-                            st.markdown(f"Inside if Analyzing: {section}")
-                            validated_section = analyze_policy_section5(policy_text)
-                            results.append(validated_section)
-                        elif section == "Section 6 — Consent":
-                            st.markdown(f"Inside if Analyzing: {section}")
-                            validated_section = analyze_policy_section6(policy_text)
-                            results.append(validated_section)
-                        elif section == "Section 7 — Certain Legitimate Uses":
-                            st.markdown(f"Inside if Analyzing: {section}")
-                            validated_section = analyze_policy_section7(policy_text)
-                            results.append(validated_section)
-                        elif section == "Section 8 — General Obligations of Data Fiduciary":
-                            st.markdown(f"Inside if Analyzing: {section}")
-                            validated_section = analyze_policy_section8(policy_text)
-                            results.append(validated_section)
-
-                        st.success(f"✅ Completed: {section}")
-
-                    except Exception as e:
-                        st.error(f"❌ Error analyzing {section}: {e}")
-    
-            st.markdown("---")
-            if results:
-                # Flatten results for table display (avoid [object Object])
-                flat_data = []
-                for row in results:
-                    flat_data.append({
-                        "DPDPA Section": row.get("DPDPA Section", ""),
-                        "Meaning": row.get("DPDPA Section Meaning", "Not applicable"),
-                        "Match Level": row.get("Match Level", ""),
-                        "Severity": row.get("Severity", ""),
-                        "Score": row.get("Compliance Points", row.get("Compliance Score", ""))
-                    })
-
-                df = pd.DataFrame(flat_data)
-            
-                # Display clean table
-                st.success("✅ Full Analysis Complete!")
-                st.dataframe(df.style.set_properties(**{
-                    'background-color': 'white',
-                    'color': 'black'
-                }))
-            
-                # Show detailed expanders
-                # Show detailed expanders
-                for row in results:
-                    with st.expander(f"🔍 {row['DPDPA Section']} — Full Checklist & Suggestions"):
-                        if row['DPDPA Section'] == "Section 6 — Consent" and "Checklist Items" not in row:
-                            # st.markdown(f"**Match Level:** {row['Match Level']} | **Score:** {row['Compliance Score']}")
-                            st.markdown(f"**Match Level:** {row.get('Match Level', '')} | **Score:** {row.get('Compliance Points', row.get('Compliance Score', 'N/A'))}")
-                            st.markdown("**Matched Checklist Items:**")
-                            for item in row["Checklist Items Matched"]:
-                                st.markdown(f"- ✅ {item}")
-                            st.markdown("**Matched Sentences & Justifications:**")
-                            for s in row["Matched Sentences"]:
-                                st.markdown(f"- **Sentence:** {s['Sentence']}")
-                                st.markdown(f"  - **Checklist Item:** {s['Checklist Item']}")
-                                st.markdown(f"  - **Justification:** {s['Justification']}")
-
-                        elif row['DPDPA Section'] == "Section 4 — Grounds for Processing Personal Data" and "Checklist Items" not in row:
-                            # st.markdown(f"**Match Level:** {row['Match Level']} | **Score:** {row['Compliance Score']}")
-                            st.markdown(f"**Match Level:** {row.get('Match Level', '')} | **Score:** {row.get('Compliance Points', row.get('Compliance Score', 'N/A'))}")
-                            st.markdown("**Matched Checklist Items:**")
-                            for item in row["Checklist Items Matched"]:
-                                st.markdown(f"- ✅ {item}")
-                            st.markdown("**Matched Sentences & Justifications:**")
-                            for s in row["Matched Sentences"]:
-                                st.markdown(f"- **Sentence:** {s['Sentence']}")
-                                st.markdown(f"  - **Checklist Item:** {s['Checklist Item']}")
-                                st.markdown(f"  - **Justification:** {s['Justification']}")
-                        
-                        elif row['DPDPA Section'] == "Section 5 — Notice" and "Checklist Items" not in row:
-                            # st.markdown(f"**Match Level:** {row['Match Level']} | **Score:** {row['Compliance Score']}")
-                            st.markdown(f"**Match Level:** {row.get('Match Level', '')} | **Score:** {row.get('Compliance Points', row.get('Compliance Score', 'N/A'))}")
-                            st.markdown("**Matched Checklist Items:**")
-                            for item in row["Checklist Items Matched"]:
-                                st.markdown(f"- ✅ {item}")
-                            st.markdown("**Matched Sentences & Justifications:**")
-                            for s in row["Matched Sentences"]:
-                                st.markdown(f"- **Sentence:** {s['Sentence']}")
-                                st.markdown(f"  - **Checklist Item:** {s['Checklist Item']}")
-                                st.markdown(f"  - **Justification:** {s['Justification']}")
-                        elif row['DPDPA Section'] == "Section 7 — Certain Legitimate Uses" and "Checklist Items" not in row:
-                            # st.markdown(f"**Match Level:** {row['Match Level']} | **Score:** {row['Compliance Score']}")
-                            st.markdown(f"**Match Level:** {row.get('Match Level', '')} | **Score:** {row.get('Compliance Points', row.get('Compliance Score', 'N/A'))}")
-                            st.markdown("**Matched Checklist Items:**")
-                            for item in row["Checklist Items Matched"]:
-                                st.markdown(f"- ✅ {item}")
-                            st.markdown("**Matched Sentences & Justifications:**")
-                            for s in row["Matched Sentences"]:
-                                st.markdown(f"- **Sentence:** {s['Sentence']}")
-                                st.markdown(f"  - **Checklist Item:** {s['Checklist Item']}")
-                                st.markdown(f"  - **Justification:** {s['Justification']}")
-                        elif row['DPDPA Section'] == "Section 8 — General Obligations of Data Fiduciary" and "Checklist Items" not in row:
-                            # st.markdown(f"**Match Level:** {row['Match Level']} | **Score:** {row['Compliance Score']}")
-                            st.markdown(f"**Match Level:** {row.get('Match Level', '')} | **Score:** {row.get('Compliance Points', row.get('Compliance Score', 'N/A'))}")
-                            st.markdown("**Matched Checklist Items:**")
-                            for item in row["Checklist Items Matched"]:
-                                st.markdown(f"- ✅ {item}")
-                            st.markdown("**Matched Sentences & Justifications:**")
-                            for s in row["Matched Sentences"]:
-                                st.markdown(f"- **Sentence:** {s['Sentence']}")
-                                st.markdown(f"  - **Checklist Item:** {s['Checklist Item']}")
-                                st.markdown(f"  - **Justification:** {s['Justification']}")
-
-            
-                # Excel Download
-                excel_filename = "DPDPA_Compliance_Report.xlsx"
-                df.to_excel(excel_filename, index=False)
-                with open(excel_filename, "rb") as f:
-                    st.download_button("📥 Download Excel", f, file_name=excel_filename)
-            
-                # Score
-                try:
-                    scored_points = df['Score'].astype(float).sum()
-                    total_points = len(dpdpa_sections)
-                    score = (scored_points / total_points) * 100
-                    st.metric("🎯 Overall Compliance", f"{score:.2f}%")
-                except:
-                    st.warning("⚠️ Could not compute score. Check data types.")
-
-        else:
-            st.warning("⚠️ Please paste policy text to proceed.")
-
-# --- Dashboard & Reports ---
-elif menu == "Dashboard & Reports":
-    st.title("Dashboard & Reports")
-    st.metric("Overall Compliance", "82%", "+7%")
-    st.progress(0.82)
-    st.subheader("Risk & GPT Insights")
-    st.write("\n- Consent missing in 2 sections\n- Breach response undefined\n")
-    st.subheader("Activity Tracker")
-    st.dataframe({"Task": ["Upload Policy", "Review Results"], "Status": ["Done", "Pending"]})
-    st.download_button("Download Full Report", "Sample Report Data...", file_name="dpdpa_report.txt")
-
-# --- Knowledge Assistant ---
-elif menu == "Knowledge Assistant":
-    st.title("Knowledge Assistant")
-    with st.expander("📘 DPDPA + DPDP Rules Summary"):
-        st.markdown("Digital Personal Data Protection Act focuses on consent, purpose limitation, etc.")
-    with st.expander("📖 Policy Glossary"):
-        st.write({"Data Principal": "The individual to whom personal data relates."})
-    with st.expander("🔍 Clause-by-Clause Reference"):
-        st.markdown("Section 5: Notice - Clear, itemised, accessible...")
-    with st.expander("🆘 Help Centre"):
-        st.write("Email: support@dpdpatool.com | Call: +91-XXX-XXX")
-
-# --- Admin Settings ---
-elif menu == "Admin Settings":
-    st.title("Admin Settings")
-    st.subheader("User & Role Management")
-    st.write("Admin | Reviewer | Editor")
-    st.subheader("Organization Profile")
-    st.text_input("Organization Name")
-    st.text_input("Sector")
-    st.subheader("Audit Log Controls")
-    st.checkbox("Enable audit logs")
-    st.subheader("Data Backup & Export")
-    st.button("Download Backup")
+                if section_id == "All Sections":
+                    for sid in dpdpa_checklists:
+                        st.markdown(f"### Section {sid} — {dpdpa_checklists[sid]['title']}")
+                        result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
+                        st.json(result)
+                        st.markdown("---")
+                else:
+                    checklist = dpdpa_checklists[section_id]['items']
+                    result = analyze_policy_section(section_id, checklist, policy_text)
+                    st.json(result)
