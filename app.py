@@ -459,9 +459,43 @@ elif menu == "Policy Compliance Checker":
                     for sid in dpdpa_checklists:
                         st.markdown(f"### Section {sid} — {dpdpa_checklists[sid]['title']}")
                         result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
-                        st.json(result)
+                        with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
+                            st.markdown(f"**Compliance Score:** `{result['Compliance Score']}`  \n"
+                                        f"**Match Level:** `{result['Match Level']}`", unsafe_allow_html=True)
+                        
+                            st.markdown("### 📋 Checklist Items Matched:")
+                            for i, item in enumerate(result["Checklist Items Matched"]):
+                                st.markdown(f"- {item}")
+                        
+                            st.markdown("### 🔍 Matched Details:")
+                            for detail in result["Matched Details"]:
+                                st.markdown(f"**• {detail['Checklist Item']}** — `{detail['Status']}`  \n> _{detail['Justification']}_")
+                        
+                            st.markdown("### ✏️ Suggested Rewrite:")
+                            st.info(result["Suggested Rewrite"])
+                        
+                            st.markdown("### 🧾 Simplified Legal Meaning:")
+                            st.success(result["Simplified Legal Meaning"])
+
                         st.markdown("---")
                 else:
                     checklist = dpdpa_checklists[section_id]['items']
                     result = analyze_policy_section(section_id, checklist, policy_text)
-                    st.json(result)
+                    with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
+                        st.markdown(f"**Compliance Score:** `{result['Compliance Score']}`  \n"
+                                    f"**Match Level:** `{result['Match Level']}`", unsafe_allow_html=True)
+                    
+                        st.markdown("### 📋 Checklist Items Matched:")
+                        for i, item in enumerate(result["Checklist Items Matched"]):
+                            st.markdown(f"- {item}")
+                    
+                        st.markdown("### 🔍 Matched Details:")
+                        for detail in result["Matched Details"]:
+                            st.markdown(f"**• {detail['Checklist Item']}** — `{detail['Status']}`  \n> _{detail['Justification']}_")
+                    
+                        st.markdown("### ✏️ Suggested Rewrite:")
+                        st.info(result["Suggested Rewrite"])
+                    
+                        st.markdown("### 🧾 Simplified Legal Meaning:")
+                        st.success(result["Simplified Legal Meaning"])
+
