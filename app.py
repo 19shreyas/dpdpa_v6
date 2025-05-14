@@ -501,11 +501,12 @@ elif menu == "Policy Compliance Checker":
                                     status = detail["Status"]
                                     status_key = status.lower()
                                     color = status_color.get(status_key, "#6C757D")  # fallback grey
+                                    text_color = "white" if color in ["#198754", "#DC3545"] else "black"
                                 
                                     st.markdown(f"""
                                     <div style="margin-bottom: 1rem;">
                                         <b> {detail['Checklist Item']}</b>
-                                        <span style="background-color:{color}; color:white; padding:2px 6px; border-radius:5px; font-size:0.85em;">
+                                        <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
                                             {status}
                                         </span><br>
                                         <i style="color:#555;">{detail['Justification']}</i>
@@ -564,11 +565,13 @@ elif menu == "Policy Compliance Checker":
                                 status = detail["Status"]
                                 status_key = status.lower()
                                 color = status_color.get(status_key, "#6C757D")  # fallback grey
+                                text_color = "white" if color in ["#198754", "#DC3545"] else "black"
+
                             
                                 st.markdown(f"""
                                 <div style="margin-bottom: 1rem;">
                                     <b>• {detail['Checklist Item']}</b>
-                                    <span style="background-color:{color}; color:white; padding:2px 6px; border-radius:5px; font-size:0.85em;">
+                                    <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
                                         {status}
                                     </span><br>
                                     <i style="color:#555;">{detail['Justification']}</i>
