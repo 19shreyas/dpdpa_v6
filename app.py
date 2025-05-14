@@ -502,7 +502,7 @@ elif menu == "Policy Compliance Checker":
                                 
                                     st.markdown(f"""
                                     <div style="margin-bottom: 1rem;">
-                                        <b>• {detail['Checklist Item']}</b>
+                                        <b> {detail['Checklist Item']}</b>
                                         <span style="background-color:{color}; color:white; padding:2px 6px; border-radius:5px; font-size:0.85em;">
                                             {status}
                                         </span><br>
