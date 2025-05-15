@@ -462,7 +462,13 @@ elif menu == "Policy Compliance Checker":
 
         if uploaded_pdf:
             # 👇 Custom visible filename
-            st.markdown(f"📄 **Uploaded file:** `{uploaded_pdf.name}`", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style="padding: 6px 12px; background-color:#f1f1f1; display:inline-block;
+                        border-radius:6px; font-weight:600; color:#000; font-family: Arial, sans-serif;">
+            📄 Uploaded file: {uploaded_pdf.name}
+            </div>
+            """, unsafe_allow_html=True)
+
             policy_text = extract_text_from_pdf(uploaded_pdf)
         else:
             policy_text = ""
