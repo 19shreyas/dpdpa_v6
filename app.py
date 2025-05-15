@@ -251,7 +251,6 @@ def analyze_policy_section(section_id, checklist, policy_text):
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
 
-    
 def set_custom_css():
     st.markdown("""
     <style>
@@ -400,7 +399,6 @@ menu = st.sidebar.radio("", [
     "Admin Settings"
 ])
 st.sidebar.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
-#st.sidebar.image(".images/EY-Parthenon_idpWq1a8hl_0.png", width=250)
 st.sidebar.markdown("""
     <div style='padding: 0px 12px 0px 0px;'>
         <img src='https://i.postimg.cc/j2dv9kZ2/EY-Parthenon-idp-Wq1a8hl-0.png' width='200'>
