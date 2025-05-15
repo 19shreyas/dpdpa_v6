@@ -522,38 +522,29 @@ elif menu == "Policy Compliance Checker":
                               </span>
                             </div>
                             """, unsafe_allow_html=True)
-
-
                         
                             st.markdown("### 📋 Checklist Items Matched:")
                             for i, item in enumerate(result["Checklist Items Matched"]):
                                 st.markdown(f"- {item}")
                         
                             st.markdown("### 🔍 Matched Details:")
-                            for detail in result["Matched Details"]:
-                                
-                                status_color = {
-                                    "explicitly mentioned": "#198754",  # green
-                                    "partially mentioned": "#FFC107",   # yellow
-                                    "missing": "#DC3545"                # red
-                                }
-                                
+                            for item in result["Matched Details"]:
+                                status = item.get("Status", "Missing")
+                                color = {
+                                    "Explicitly Mentioned": "#198754",
+                                    "Partially Mentioned": "#FFC107",
+                                    "Missing": "#DC3545"
+                                }.get(status, "#6c757d")
                             
-                                for item in result["Matched Details"]:
-                                    status = item["Status"]
-                                    color = {
-                                        "Explicitly Mentioned": "#198754",
-                                        "Partially Mentioned": "#FFC107",
-                                        "Missing": "#DC3545"
-                                    }.get(status, "#6c757d")
-                                
-                                    st.markdown(f"""
-                                **{item['Checklist Item ID']} — {item['Checklist Text']}**  
-                                <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                                <small>📝 {item['Justification']}</small>
-                                """, unsafe_allow_html=True)
-
-
+                                item_id = item.get("Checklist Item ID", "❓")
+                                item_text = item.get("Checklist Text", "❓")
+                                justification = item.get("Justification", "No justification found.")
+                            
+                                st.markdown(f"""
+                            **{item_id} — {item_text}**  
+                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                            <br><small>📝 {justification}</small>
+                            """, unsafe_allow_html=True)
                         
                             st.markdown("### ✏️ Suggested Rewrite:")
                             st.info(result["Suggested Rewrite"])
