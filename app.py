@@ -380,6 +380,11 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
+    /* Fix the uploaded file name visibility */
+    [data-testid="stFileUploader"] .uploadedFileName {
+        color: black !important;
+        font-weight: 600;
+    }
 
     </style>
     """, unsafe_allow_html=True)
