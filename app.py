@@ -24,7 +24,6 @@ dpdpa_checklists = {
     "5": {
         "title": "Notice",
         "items": [
-            section_5_checklist = [
             "The policy must state that **every request for consent** is accompanied or preceded by a **notice from the Data Fiduciary to the Data Principal**.",
             "The notice must clearly specify the **personal data proposed to be processed**.",
             "The notice must clearly specify the **purpose for which the personal data is proposed to be processed**.",
