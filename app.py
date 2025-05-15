@@ -126,7 +126,6 @@ def create_block_prompt(section_id, block_text, checklist):
     checklist_text = "\n".join(
         f"{item['id']}. {item['text']}" for item in checklist
     )
-
     return f"""
 You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
 
@@ -638,8 +637,7 @@ elif menu == "Policy Compliance Checker":
                         <code style="font-size:12px; white-space:pre-wrap;">{m['BlockPreview']}</code>
                         </small>
                         """, unsafe_allow_html=True)
-
-                    
+  
                         st.markdown("### ✏️ Suggested Rewrite:")
                         st.info(result["Suggested Rewrite"])
                     
