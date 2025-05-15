@@ -181,67 +181,6 @@ def compute_score_and_level(evaluations, total_items):
         level = "Partially Compliant"
     return round(score, 2), level
 
-# --- Analyzer ---
-# def analyze_policy_section_old(section_id, checklist, policy_text):
-#     blocks = break_into_blocks(policy_text)
-#     all_results = []
-
-#     for block in blocks:
-#         prompt = create_block_prompt(section_id, block, checklist)
-#         try:
-#             result = call_gpt(prompt)
-#             result["Block"] = block
-#             all_results.append(result)
-#         except:
-#             continue
-
-#     matched_items = {}
-
-#     if section_id == "8":
-#         canonical_display_map = {
-#             "implements appropriate technical and organizational measures": "Implements appropriate technical and organizational measures to ensure compliance with DPDPA.",
-#             "maintains data accuracy and completeness": "Maintains data accuracy and completeness to ensure it is up-to-date.",
-#             "implements reasonable security safeguards": "Implements reasonable security safeguards to prevent personal data breaches.",
-#             "notifies the data protection board and affected data principals in case of breach": "Notifies the Data Protection Board and affected Data Principals in the event of a breach.",
-#             "erases personal data when purpose is fulfilled": "Erases personal data as soon as the purpose is fulfilled and retention is no longer necessary.",
-#             "maintains records of processing activities": "Maintains records of processing activities in accordance with prescribed rules.",
-#             "conducts data protection impact assessments": "Conducts periodic Data Protection Impact Assessments if required.",
-#             "appoints a data protection officer": "Appoints a Data Protection Officer (DPO) if classified as a Significant Data Fiduciary.",
-#             "publishes dpo contact information": "Publishes the business contact information of the DPO or person handling grievances."
-#         }
-#     else:
-#         canonical_display_map = {}
-
-#     for res in all_results:
-#         for item in res.get("Checklist Evaluation", []):
-#             key = item["Checklist Item"].strip().lower().replace(".", "")
-
-#             if section_id == "8":
-#                 for match in canonical_display_map.keys():
-#                     if match in key:
-#                         key = match
-#                         break
-
-#             if "all other checklist items" in key:
-#                 continue
-
-#             if key not in matched_items:
-#                 item["Checklist Item"] = canonical_display_map.get(key, item["Checklist Item"])
-#                 matched_items[key] = item
-
-#     evaluations = list(matched_items.values())
-#     score, level = compute_score_and_level(evaluations, len(checklist))
-
-#     return {
-#         "Section": section_id,
-#         "Title": dpdpa_checklists[section_id]['title'],
-#         "Match Level": level,
-#         "Compliance Score": score,
-#         "Checklist Items Matched": [item["Checklist Item"] for item in evaluations],
-#         "Matched Details": evaluations,
-#         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", ""),
-#         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "")
-#     }
 def analyze_policy_section(section_id, checklist, policy_text):
     blocks = break_into_blocks(policy_text)
     all_results = []
