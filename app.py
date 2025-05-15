@@ -280,17 +280,25 @@ def analyze_policy_section(section_id, checklist, policy_text):
                 "Status": item["Status"],
                 "Justification": item["Justification"]
             })
-
+    # Add empty items too (even if no matches were found)
+    checklist_coverage = []
+    for item in checklist:
+        cid = item["id"]
+        checklist_coverage.append({
+            "Checklist ID": cid,
+            "Checklist Text": item["text"],
+            "Matches": matched_items.get(cid, {}).get("Matches", [])
+        })
+    
     final_output = {
         "Section": section_id,
         "Title": dpdpa_checklists[section_id]['title'],
-        "Checklist Coverage": list(matched_items.values()),
+        "Checklist Coverage": checklist_coverage,
         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", ""),
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "")
     }
 
     return final_output
-
     
 def set_custom_css():
     st.markdown("""
@@ -571,6 +579,8 @@ elif menu == "Policy Compliance Checker":
                 else:
                     checklist = dpdpa_checklists[section_id]['items']
                     result = analyze_policy_section(section_id, checklist, policy_text)
+
+                    st.json(result)
     
                     with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
 
