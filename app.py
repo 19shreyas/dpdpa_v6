@@ -634,18 +634,7 @@ elif menu == "Policy Compliance Checker":
                             #         <i style="color:#555;">{detail['Justification']}</i>
                             #     </div>
                             #     """, unsafe_allow_html=True)
-                            # 🔍 Debug before processing
-                            st.subheader("🧪 DEBUG — Results Summary")
-                            st.json(result)
                             
-                            st.subheader("🧪 DEBUG — Matched Details")
-                            st.write("Type:", type(result.get("Matched Details")))
-                            st.json(result.get("Matched Details"))
-                            
-                            matched = result.get("Matched Details")
-                            if isinstance(matched, list) and matched:
-                                st.subheader("🧪 First Checklist Item")
-                                st.json(matched[0])
 
                             for item in result["Matched Details"]:
                                     status = item["Status"]
