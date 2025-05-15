@@ -133,22 +133,26 @@ def create_block_prompt(section_id, block_text, checklist):
     return f"""
     You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
     
-    **Checklist:**
+    **Checklist:** Evaluate only against these exact checklist items. Do not rephrase or modify them. Use them exactly as-is in the response.
     {checklist_text}
     
     **Policy Block:**
     {block_text}
     
     Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
-    Return output in this format:
+    Return output in this strict JSON format:
     {{
-      "Match Level": "...",
-      "Compliance Score": 0.0,
+      "Match Level": "[Fully Compliant / Partially Compliant / Non-Compliant]",
+      "Compliance Score": [number between 0 and 1],
       "Checklist Evaluation": [
-        {{"Checklist Item": "...", "Status": "...", "Justification": "..."}}
+        {{
+          "Checklist Item": "[Copy and paste exactly from the checklist above]",
+          "Status": "[Explicitly Mentioned / Partially Mentioned / Missing]",
+          "Justification": "[Why this block matches or doesn't match the item]"
+        }}
       ],
-      "Suggested Rewrite": "...",
-      "Simplified Legal Meaning": "..."
+      "Suggested Rewrite": "[Rewrite this block to be fully compliant with all checklist items]",
+      "Simplified Legal Meaning": "[Explain the section in plain English, 1-2 sentences max]"
     }}
     """
 
