@@ -618,21 +618,34 @@ elif menu == "Policy Compliance Checker":
                                 "missing": "#DC3545"                # red
                             }
                             
-                            for detail in result["Matched Details"]:
-                                status = detail["Status"]
-                                status_key = status.lower()
-                                color = status_color.get(status_key, "#6C757D")  # fallback grey
-                                text_color = "white" if color in ["#198754", "#DC3545"] else "black"
+                            # for detail in result["Matched Details"]:
+                            #     status = detail["Status"]
+                            #     status_key = status.lower()
+                            #     color = status_color.get(status_key, "#6C757D")  # fallback grey
+                            #     text_color = "white" if color in ["#198754", "#DC3545"] else "black"
 
                             
-                                st.markdown(f"""
-                                <div style="margin-bottom: 1rem;">
-                                    <b>• {detail['Checklist Item']}</b>
-                                    <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
-                                        {status}
-                                    </span><br>
-                                    <i style="color:#555;">{detail['Justification']}</i>
-                                </div>
+                            #     st.markdown(f"""
+                            #     <div style="margin-bottom: 1rem;">
+                            #         <b>• {detail['Checklist Item']}</b>
+                            #         <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
+                            #             {status}
+                            #         </span><br>
+                            #         <i style="color:#555;">{detail['Justification']}</i>
+                            #     </div>
+                            #     """, unsafe_allow_html=True)
+                            for item in results["Matched Details"]:
+                                    status = item["Status"]
+                                    color = {
+                                        "Explicitly Mentioned": "#198754",
+                                        "Partially Mentioned": "#FFC107",
+                                        "Missing": "#DC3545"
+                                    }.get(status, "#6c757d")
+                                
+                                    st.markdown(f"""
+                                **{item['Checklist Item ID']} — {item['Checklist Text']}**  
+                                <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                                <small>📝 {item['Justification']}</small>
                                 """, unsafe_allow_html=True)
 
                     
