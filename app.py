@@ -255,17 +255,23 @@ def analyze_policy_section(section_id, checklist, policy_text):
         except:
             continue
 
-    # Initialize per checklist ID
     matched_items = {}
     checklist_map = {item["id"]: item["text"] for item in checklist}
 
     for res in all_results:
         for item in res.get("Checklist Evaluation", []):
-            checklist_id = item.get("Checklist Item", "").split(".")[0].strip()  # e.g., "5.1"
+            checklist_line = item.get("Checklist Item", "").strip()
+            if "." not in checklist_line:
+                continue
+            checklist_id = checklist_line.split(".")[0].strip()
+
+            if checklist_id not in checklist_map:
+                continue
+
             if checklist_id not in matched_items:
                 matched_items[checklist_id] = {
                     "Checklist ID": checklist_id,
-                    "Checklist Text": checklist_map.get(checklist_id, "UNKNOWN"),
+                    "Checklist Text": checklist_map[checklist_id],
                     "Matches": []
                 }
 
@@ -284,6 +290,7 @@ def analyze_policy_section(section_id, checklist, policy_text):
     }
 
     return final_output
+
     
 def set_custom_css():
     st.markdown("""
