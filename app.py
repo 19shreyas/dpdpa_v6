@@ -496,7 +496,7 @@ elif menu == "Policy Compliance Checker":
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>5. Run Compliance Check</h3>", unsafe_allow_html=True)
     if st.button("Run Compliance Check"):
         if policy_text:
-            results = []
+            result = []
             with st.spinner("Running GPT-based compliance evaluation..."):
                 if section_id == "All Sections":
                     for sid in dpdpa_checklists:
@@ -555,7 +555,7 @@ elif menu == "Policy Compliance Checker":
                                 #         <i style="color:#555;">{detail['Justification']}</i>
                                 #     </div>
                                 #     """, unsafe_allow_html=True)
-                                for item in results["Matched Details"]:
+                                for item in result["Matched Details"]:
                                     status = item["Status"]
                                     color = {
                                         "Explicitly Mentioned": "#198754",
@@ -636,18 +636,18 @@ elif menu == "Policy Compliance Checker":
                             #     """, unsafe_allow_html=True)
                             # 🔍 Debug before processing
                             st.subheader("🧪 DEBUG — Results Summary")
-                            st.json(results)
+                            st.json(result)
                             
                             st.subheader("🧪 DEBUG — Matched Details")
-                            st.write("Type:", type(results.get("Matched Details")))
-                            st.json(results.get("Matched Details"))
+                            st.write("Type:", type(result.get("Matched Details")))
+                            st.json(result.get("Matched Details"))
                             
-                            matched = results.get("Matched Details")
+                            matched = result.get("Matched Details")
                             if isinstance(matched, list) and matched:
                                 st.subheader("🧪 First Checklist Item")
                                 st.json(matched[0])
 
-                            for item in results["Matched Details"]:
+                            for item in result["Matched Details"]:
                                     status = item["Status"]
                                     color = {
                                         "Explicitly Mentioned": "#198754",
