@@ -458,47 +458,27 @@ elif menu == "Policy Compliance Checker":
     if upload_option == "Paste text":
         policy_text = st.text_area("Paste your Privacy Policy text:", height=300)
     elif upload_option == "Upload PDF":
-        # uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf")
         uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf", label_visibility="collapsed")
 
         if uploaded_pdf:
             # 👇 Custom visible filename
-            policy_text = extract_text_from_pdf(uploaded_pdf)
             st.markdown(f"📄 **Uploaded file:** `{uploaded_pdf.name}`", unsafe_allow_html=True)
+            policy_text = extract_text_from_pdf(uploaded_pdf)
         else:
             policy_text = ""
 
-        # if uploaded_pdf:
-        #     policy_text = extract_text_from_pdf(uploaded_pdf)
-        # else:
-        #     policy_text = ""
-
-    #st.header("2. Choose Matching Level")
-    st.markdown("<h3 style='font-size:24px; font-weight:700;'>2. Choose Matching Level</h3>", unsafe_allow_html=True)
-    match_level = st.radio("How do you want to match?", [
-        "Document-level Match (default)", "Clause-level Match"], index=0)
-
-    #st.header("3. Select Scope of Evaluation")
-    st.markdown("<h3 style='font-size:24px; font-weight:700;'>3. Select Scope of Evaluation</h3>", unsafe_allow_html=True)
-    scope = st.selectbox("", [
-        "DPDP Act 2023 (default)", "DPDP Rules 2025", "DPDP Act + Rules", "Custom Sections"], index=0)
-    if scope == "Custom Sections":
-        custom_sections = st.multiselect("Select specific sections to match against", [
-        "Section 4 — Grounds for Processing Personal Data", "Section 5 — Notice", "Section 6 — Consent", "Section 7 — Certain Legitimate Uses",
-        "Section 8 — General Obligations of Data Fiduciary"])
-    else:
-        custom_sections = []
 
     #st.header("4. Industry Context (Optional)")
-    st.markdown("<h3 style='font-size:24px; font-weight:700;'>4. Industry Context (Optional)</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:24px; font-weight:700;'>2. Industry Context (Optional)</h3>", unsafe_allow_html=True)
     industry = st.selectbox("", ["General", "Automotive", "Healthcare", "Fintech", "Other"])
     if industry == "Other":
         custom_industry = st.text_input("Specify your industry")
     else:
         custom_industry = None
 
+    st.markdown("<h3 style='font-size:24px; font-weight:700;'>3. Choose DPDPA Section</h3>", unsafe_allow_html=True)
     section_options = list(dpdpa_checklists.keys()) + ["All Sections"]
-    section_id = st.selectbox("Choose DPDPA Section", options=section_options)
+    section_id = st.selectbox("", options=section_options)
 
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>5. Run Compliance Check</h3>", unsafe_allow_html=True)
     if st.button("Run Compliance Check"):
