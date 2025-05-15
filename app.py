@@ -41,7 +41,7 @@ dpdpa_checklists = {
             "The policy must provide the Data Principal an **option to access the contents of the notice** in **English or any language listed in the Eighth Schedule of the Constitution**."
         ]
     },
-    "6": {
+    "6 - Consent": {
         "title": "Consent",
         "items": [
             "The policy must state that **consent is free, specific, informed, unconditional, and unambiguous**, given through a **clear affirmative action**.",
@@ -62,7 +62,7 @@ dpdpa_checklists = {
             "The policy must mention that, in case of dispute, the **Data Fiduciary must prove that proper notice was given and valid consent was obtained** as per the Act and its rules."
         ]
     },
-    "7": {
+    "7 - Certain Legitimate Uses": {
         "title": "Certain Legitimate Uses",
         "items": [
             "The policy must allow personal data to be processed for the **specified purpose for which the Data Principal voluntarily provided the data**, if she has **not indicated non-consent** to such use.",
@@ -78,7 +78,7 @@ dpdpa_checklists = {
             "The policy must allow personal data to be processed for purposes related to **employment**, or to **safeguard the employer from loss or liability**, including prevention of corporate espionage, confidentiality of trade secrets or IP, and enabling services/benefits to employee Data Principals."
         ]
     },
-    "8": {
+    "8 - General Obligations of Data Fiduciary": {
         "title": "General Obligations of Data Fiduciary",
         "items": [
             "The policy must state that the Data Fiduciary is responsible for complying with the Act and its rules, even if the Data Principal fails to perform her duties.",
