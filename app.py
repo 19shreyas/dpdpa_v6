@@ -646,7 +646,6 @@ elif menu == "Policy Compliance Checker":
                         <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
                         <br><small>📝 {justification}</small>
                         """, unsafe_allow_html=True)
-
                     
                         st.markdown("### ✏️ Suggested Rewrite:")
                         st.info(result["Suggested Rewrite"])
