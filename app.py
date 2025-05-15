@@ -380,30 +380,6 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
-    
-    /* Just a fallback style if JS is blocked */
-    .uploaded-file-name-patch {
-        color: black !important;
-        font-weight: 600 !important;
-    }
-    </style>
-    
-    <script>
-    const waitAndStyle = () => {
-      const check = () => {
-        const spans = window.parent.document.querySelectorAll('[data-testid="stFileUploader"] span');
-        for (const span of spans) {
-          const text = span.textContent || '';
-          if (text.includes('.pdf') || text.includes('.doc') || text.includes('.txt')) {
-            span.style.color = 'black';
-            span.style.fontWeight = '600';
-          }
-        }
-      };
-      setTimeout(check, 1000);  // wait a second after file upload
-    };
-    
-    window.addEventListener('load', waitAndStyle);
 
     </style>
     """, unsafe_allow_html=True)
@@ -471,6 +447,34 @@ elif menu == "Policy Generator":
 
 # --- Policy Compliance Checker ---
 elif menu == "Policy Compliance Checker":
+    st.markdown("""
+    <style>
+    /* Just a fallback style if JS is blocked */
+    .uploaded-file-name-patch {
+        color: black !important;
+        font-weight: 600 !important;
+    }
+    </style>
+    
+    <script>
+    const waitAndStyle = () => {
+      const check = () => {
+        const spans = window.parent.document.querySelectorAll('[data-testid="stFileUploader"] span');
+        for (const span of spans) {
+          const text = span.textContent || '';
+          if (text.includes('.pdf') || text.includes('.doc') || text.includes('.txt')) {
+            span.style.color = 'black';
+            span.style.fontWeight = '600';
+          }
+        }
+      };
+      setTimeout(check, 1000);  // wait a second after file upload
+    };
+    
+    window.addEventListener('load', waitAndStyle);
+    </script>
+    """, unsafe_allow_html=True)
+
     #st.title("Match Policy to DPDPA")
     st.markdown("<h1 style='font-size:38px; font-weight:800;'>Match Policy to DPDPA</h1>", unsafe_allow_html=True)
     
