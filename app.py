@@ -183,60 +183,70 @@ def analyze_policy_section(section_id, checklist, policy_text):
     blocks = break_into_blocks(policy_text)
     all_results = []
 
+    # Run GPT for each block and collect all results
     for block in blocks:
         prompt = create_block_prompt(section_id, block, checklist)
         try:
             result = call_gpt(prompt)
-            # ✅ DEBUG BLOCK — SHOW WHAT GPT RETURNED FOR EACH BLOCK
-            st.markdown("### 🧱 Policy Block Being Evaluated:")
-            st.code(block, language="text")
-            
-            st.markdown("### 🤖 Raw GPT Output:")
-            st.json(result)
-            
-            # Optional: focus only on Checklist Evaluation
-            st.markdown("### 📋 Checklist Evaluation Returned by GPT:")
-            st.json(result.get("Checklist Evaluation", []))
-            
-            # Optional: show which items were matched
-            matched_now = [
-                item for item in result.get("Checklist Evaluation", [])
-                if item["Status"].lower() in ["explicitly mentioned", "partially mentioned"]
-            ]
-            st.markdown("### ✅ Matched Items in This Block:")
-            st.json(matched_now)
-            #############################################
             result["Block"] = block
             all_results.append(result)
         except:
             continue
 
-    matched_items = {}
+    # Track the best status per checklist item
+    checklist_summary = {item: {"Status": "Missing", "Justification": ""} for item in checklist}
 
-    # Force GPT to stick to your original checklist
     for res in all_results:
         for eval_item in res.get("Checklist Evaluation", []):
-            for original_item in checklist:
-                # Exact match enforcement
-                if eval_item["Checklist Item"].strip() == original_item.strip():
-                    eval_item["Checklist Item"] = original_item  # enforce original
-                    key = original_item.strip().lower()
-                    if key not in matched_items:
-                        matched_items[key] = eval_item
+            item_text = eval_item["Checklist Item"].strip()
+            status = eval_item["Status"].strip()
+            justification = eval_item["Justification"].strip()
 
-    evaluations = list(matched_items.values())
-    score, level = compute_score_and_level(evaluations, len(checklist))
+            if item_text not in checklist_summary:
+                continue
+
+            current_status = checklist_summary[item_text]["Status"]
+
+            # Promote Partial → Explicitly Mentioned
+            if status == "Explicitly Mentioned":
+                checklist_summary[item_text] = {"Status": status, "Justification": justification}
+            elif status == "Partially Mentioned" and current_status == "Missing":
+                checklist_summary[item_text] = {"Status": status, "Justification": justification}
+
+    # Convert to evaluation list
+    evaluations = []
+    matched_count = 0
+    partial_count = 0
+
+    for item, data in checklist_summary.items():
+        evaluations.append({
+            "Checklist Item": item,
+            "Status": data["Status"],
+            "Justification": data["Justification"]
+        })
+        if data["Status"] == "Explicitly Mentioned":
+            matched_count += 1
+        elif data["Status"] == "Partially Mentioned":
+            partial_count += 1
+
+    score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
+    level = (
+        "Fully Compliant" if score == 1 else
+        "Non-Compliant" if score == 0 else
+        "Partially Compliant"
+    )
 
     return {
         "Section": section_id,
         "Title": dpdpa_checklists[section_id]['title'],
         "Match Level": level,
-        "Compliance Score": score,
-        "Checklist Items Matched": [item["Checklist Item"] for item in evaluations],
+        "Compliance Score": round(score, 2),
         "Matched Details": evaluations,
-        "Suggested Rewrite": all_results[0].get("Suggested Rewrite", ""),
-        "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "")
+        "Checklist Items Matched": [e["Checklist Item"] for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
+        "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
+        "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
+
     
 def set_custom_css():
     st.markdown("""
