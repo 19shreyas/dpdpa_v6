@@ -95,6 +95,7 @@ dpdpa_checklists = {
             "The policy must clarify that a Data Principal is considered as **not having approached** the Data Fiduciary if she has not initiated contact in person, or through physical or electronic communication, for the purpose within a prescribed period."
         ]
     }
+}
 
 # --- Block Splitter ---
 def break_into_blocks(text):
