@@ -385,7 +385,10 @@ def set_custom_css():
     color: #000000 !important;
     font-weight: 500;
     }
-
+    [data-testid="stFileUploader"] section div span {
+        color: black !important;
+        font-weight: 600;
+    }
 
 
 
