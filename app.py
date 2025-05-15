@@ -544,97 +544,47 @@ elif menu == "Policy Compliance Checker":
                         result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
                         
                         with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                            level_color = {
-                                "Fully Compliant": "#198754",
-                                "Partially Compliant": "#FFC107",
-                                "Non-Compliant": "#DC3545"
-                            }
-                            
-    
-                            st.markdown(f"""
-                            <div style="margin-bottom: 1rem;">
-                            </div>
-                            """, unsafe_allow_html=True)
-    
-                            st.markdown("### 📋 Checklist Items Matched:")
-                            for i, item in enumerate(result["Checklist Items Matched"]):
-                                st.markdown(f"- {item}")
-    
-                            st.markdown("### 🔍 Matched Details:")
-                            status_color = {
-                                "explicitly mentioned": "#198754",
-                                "partially mentioned": "#FFC107",
-                                "missing": "#DC3545"
-                            }
-                            for detail in result["Matched Details"]:
-                                status = detail["Status"]
-                                status_key = status.lower()
-                                color = status_color.get(status_key, "#6C757D")
-                                text_color = "white" if color.strip().lower() in ["#198754", "#dc3545"] else "black"
-    
-                                st.markdown(f"""
-                                <div style="margin-bottom: 1rem;">
-                                    <b>• {detail['Checklist Item']}</b>
-                                    <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
-                                        {status}
-                                    </span><br>
-                                    <i style="color:#555;">{detail['Justification']}</i>
-                                </div>
-                                """, unsafe_allow_html=True)
-    
-                            st.markdown("### ✏️ Suggested Rewrite:")
-                            st.info(result["Suggested Rewrite"])
-                            
-                            st.markdown("### 🧾 Simplified Legal Meaning:")
-                            st.success(result["Simplified Legal Meaning"])
-    
-                        st.markdown("---")
+
+                            st.markdown("### 🧾 Simplified Legal Meaning")
+                            st.info(result.get("Simplified Legal Meaning", "Not available."))
+                        
+                            st.markdown("### 🛠 Suggested Rewrite")
+                            st.code(result.get("Suggested Rewrite", "Not available."), language="markdown")
+                        
+                            st.markdown("### 📋 Checklist Evaluation")
+                        
+                            for i, item in enumerate(result["Checklist Coverage"]):
+                                st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
+                        
+                                for match in item["Matches"]:
+                                    with st.container():
+                                        st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
+                                        st.markdown(f"✅ **Status**: `{match['Status']}`")
+                                        st.markdown(f"🧠 **Justification**: {match['Justification']}")
+                                        st.markdown("---")
+
                 
                 else:
                     checklist = dpdpa_checklists[section_id]['items']
                     result = analyze_policy_section(section_id, checklist, policy_text)
     
                     with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                        level_color = {
-                            "Fully Compliant": "#198754",
-                            "Partially Compliant": "#FFC107",
-                            "Non-Compliant": "#DC3545"
-                        }
-    
-                        st.markdown(f"""
-                        <div style="margin-bottom: 1rem;">
-                        </div>
-                        """, unsafe_allow_html=True)
-    
-                        st.markdown("### 📋 Checklist Items Matched:")
-                        for i, item in enumerate(result["Checklist Items Matched"]):
-                            st.markdown(f"- {item}")
-    
-                        st.markdown("### 🔍 Matched Details:")
-                        status_color = {
-                            "explicitly mentioned": "#198754",
-                            "partially mentioned": "#FFC107",
-                            "missing": "#DC3545"
-                        }
-                        for detail in result["Matched Details"]:
-                            status = detail["Status"]
-                            status_key = status.lower()
-                            color = status_color.get(status_key, "#6C757D")
-                            text_color = "white" if color.strip().lower() in ["#198754", "#dc3545"] else "black"
-    
-    
-                            st.markdown(f"""
-                            <div style="margin-bottom: 1rem;">
-                                <b>• {detail['Checklist Item']}</b>
-                                <span style="background-color:{color}; color:{text_color}; padding:2px 6px; border-radius:5px; font-size:0.85rem;">
-                                    {status}
-                                </span><br>
-                                <i style="color:#555;">{detail['Justification']}</i>
-                            </div>
-                            """, unsafe_allow_html=True)
-    
-                        st.markdown("### ✏️ Suggested Rewrite:")
-                        st.info(result["Suggested Rewrite"])
-                        
-                        st.markdown("### 🧾 Simplified Legal Meaning:")
-                        st.success(result["Simplified Legal Meaning"])
+
+                        st.markdown("### 🧾 Simplified Legal Meaning")
+                        st.info(result.get("Simplified Legal Meaning", "Not available."))
+                    
+                        st.markdown("### 🛠 Suggested Rewrite")
+                        st.code(result.get("Suggested Rewrite", "Not available."), language="markdown")
+                    
+                        st.markdown("### 📋 Checklist Evaluation")
+                    
+                        for i, item in enumerate(result["Checklist Coverage"]):
+                            st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
+                    
+                            for match in item["Matches"]:
+                                with st.container():
+                                    st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
+                                    st.markdown(f"✅ **Status**: `{match['Status']}`")
+                                    st.markdown(f"🧠 **Justification**: {match['Justification']}")
+                                    st.markdown("---")
+
