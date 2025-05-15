@@ -194,7 +194,6 @@ def analyze_policy_section(section_id, checklist, policy_text):
         }
         for item in checklist
     }
-
     # Run GPT on each block
     for block in blocks:
         prompt = create_block_prompt(section_id, block, checklist)
@@ -336,7 +335,6 @@ def set_custom_css():
         border-radius: 6px;
         border: none;
     }
-    
         
     /* Only for actual input and textarea fields */
     input, textarea {
