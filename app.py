@@ -183,8 +183,16 @@ def analyze_policy_section(section_id, checklist, policy_text):
     all_results = []
 
     id_to_text = {item["id"]: item["text"] for item in checklist}
+
+    # Initialize summary structure for each checklist item
     checklist_summary = {
-        item["id"]: {"Status": "Missing", "Justification": ""} for item in checklist
+        item["id"]: {
+            "Text": item["text"],
+            "BestStatus": "Missing",
+            "BestJustification": "",
+            "BlockMatches": []
+        }
+        for item in checklist
     }
 
     # Run GPT on each block
@@ -199,6 +207,8 @@ def analyze_policy_section(section_id, checklist, policy_text):
 
     # Process results
     for res in all_results:
+        block_text = res.get("Block", "")[:300].strip().replace("\n", " ") + "..."  # Block preview
+
         for eval_item in res.get("Checklist Evaluation", []):
             item_id = eval_item["Checklist Item ID"].strip()
             status = eval_item["Status"].strip()
@@ -207,12 +217,23 @@ def analyze_policy_section(section_id, checklist, policy_text):
             if item_id not in checklist_summary:
                 continue
 
-            current_status = checklist_summary[item_id]["Status"]
+            summary = checklist_summary[item_id]
+            current_best = summary["BestStatus"]
 
+            # Update best status
             if status == "Explicitly Mentioned":
-                checklist_summary[item_id] = {"Status": status, "Justification": justification}
-            elif status == "Partially Mentioned" and current_status == "Missing":
-                checklist_summary[item_id] = {"Status": status, "Justification": justification}
+                summary["BestStatus"] = status
+                summary["BestJustification"] = justification
+            elif status == "Partially Mentioned" and current_best == "Missing":
+                summary["BestStatus"] = status
+                summary["BestJustification"] = justification
+
+            # Store block-level match
+            summary["BlockMatches"].append({
+                "Status": status,
+                "Justification": justification,
+                "BlockPreview": block_text
+            })
 
     # Build final evaluation list
     evaluations = []
@@ -222,14 +243,15 @@ def analyze_policy_section(section_id, checklist, policy_text):
     for item_id, data in checklist_summary.items():
         evaluations.append({
             "Checklist Item ID": item_id,
-            "Checklist Text": id_to_text[item_id],
-            "Status": data["Status"],
-            "Justification": data["Justification"]
+            "Checklist Text": data["Text"],
+            "Status": data["BestStatus"],
+            "Justification": data["BestJustification"],
+            "Matches": data["BlockMatches"]
         })
 
-        if data["Status"] == "Explicitly Mentioned":
+        if data["BestStatus"] == "Explicitly Mentioned":
             matched_count += 1
-        elif data["Status"] == "Partially Mentioned":
+        elif data["BestStatus"] == "Partially Mentioned":
             partial_count += 1
 
     score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
@@ -245,10 +267,14 @@ def analyze_policy_section(section_id, checklist, policy_text):
         "Match Level": level,
         "Compliance Score": round(score, 2),
         "Matched Details": evaluations,
-        "Checklist Items Matched": [f"{e['Checklist Item ID']} — {e['Checklist Text']}" for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
+        "Checklist Items Matched": [
+            f"{e['Checklist Item ID']} — {e['Checklist Text']}"
+            for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]
+        ],
         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
+
 
 def set_custom_css():
     st.markdown("""
@@ -584,22 +610,37 @@ elif menu == "Policy Compliance Checker":
                     
                         st.markdown("### 🔍 Matched Details:")
                         for item in result["Matched Details"]:
-                            status = item.get("Status", "Missing")
+                            st.markdown(f"**{item['Checklist Item ID']} — {item['Checklist Text']}**")
+                        
+                            status = item["Status"]
                             color = {
                                 "Explicitly Mentioned": "#198754",
                                 "Partially Mentioned": "#FFC107",
                                 "Missing": "#DC3545"
                             }.get(status, "#6c757d")
                         
-                            item_id = item.get("Checklist Item ID", "❓")
-                            item_text = item.get("Checklist Text", "❓")
-                            justification = item.get("Justification", "No justification found.")
-                        
                             st.markdown(f"""
-                        **{item_id} — {item_text}**  
                         <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                        <br><small>📝 {justification}</small>
+                        <small>📝 Overall Justification: {item['Justification']}</small>
                         """, unsafe_allow_html=True)
+                        
+                            with st.expander("🔍 Block-level Matches"):
+                                for m in item["Matches"]:
+                                    color = {
+                                        "Explicitly Mentioned": "#198754",
+                                        "Partially Mentioned": "#FFC107",
+                                        "Missing": "#DC3545"
+                                    }.get(m["Status"], "#6c757d")
+                        
+                                    st.markdown(f"""
+                        <small>
+                        <b>Status:</b> <span style="color:white;background-color:{color};padding:2px 6px;border-radius:5px;">{m['Status']}</span><br>
+                        <b>Justification:</b> {m['Justification']}<br>
+                        <b>Block Preview:</b><br>
+                        <code style="font-size:12px; white-space:pre-wrap;">{m['BlockPreview']}</code>
+                        </small>
+                        """, unsafe_allow_html=True)
+
                     
                         st.markdown("### ✏️ Suggested Rewrite:")
                         st.info(result["Suggested Rewrite"])
