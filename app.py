@@ -496,7 +496,7 @@ if st.button("Run Compliance Check"):
                             status = detail["Status"]
                             status_key = status.lower()
                             color = status_color.get(status_key, "#6C757D")
-                            text_color = "white" if color in ["#198754", "#DC3545"] else "black"
+                            text_color = "white" if color.strip().lower() in ["#198754", "#dc3545"] else "black"
 
                             st.markdown(f"""
                             <div style="margin-bottom: 1rem;">
@@ -556,7 +556,8 @@ if st.button("Run Compliance Check"):
                         status = detail["Status"]
                         status_key = status.lower()
                         color = status_color.get(status_key, "#6C757D")
-                        text_color = "white" if color in ["#198754", "#DC3545"] else "black"
+                        text_color = "white" if color.strip().lower() in ["#198754", "#dc3545"] else "black"
+
 
                         st.markdown(f"""
                         <div style="margin-bottom: 1rem;">
