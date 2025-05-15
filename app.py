@@ -523,8 +523,7 @@ elif menu == "Policy Compliance Checker":
             with st.spinner("Running GPT-based compliance evaluation..."):
                 if section_id == "All Sections":
                     all_section_results = analyze_policy_all_sections(dpdpa_checklists, policy_text)
-                
-                     for result in all_section_results:
+                    for result in all_section_results:
                          with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
                              st.markdown("### 🧾 Simplified Legal Meaning")
                              st.info(result.get("Simplified Legal Meaning", "Not available."))
