@@ -483,10 +483,11 @@ elif menu == "Policy Compliance Checker":
         custom_industry = None
 
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>3. Choose DPDPA Section</h3>", unsafe_allow_html=True)
-    section_options = list(dpdpa_checklists.keys()) + ["All Sections"]
+    # section_options = list(dpdpa_checklists.keys()) + ["All Sections"]
+    section_options = [f"{sid} — {dpdpa_checklists[sid]['title']}" for sid in dpdpa_checklists] + ["All Sections"]
     section_id = st.selectbox("", options=section_options)
 
-    st.markdown("<h3 style='font-size:24px; font-weight:700;'>5. Run Compliance Check</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='font-size:24px; font-weight:700;'>4. Run Compliance Check</h3>", unsafe_allow_html=True)
     if st.button("Run Compliance Check"):
         if policy_text:
             result = []
@@ -549,8 +550,11 @@ elif menu == "Policy Compliance Checker":
 
                         st.markdown("---")
                 else:
-                    checklist = dpdpa_checklists[section_id]['items']
-                    result = analyze_policy_section(section_id, checklist, policy_text)
+                    section_num = section_id.split(" — ")[0] if " — " in section_id else section_id
+                    checklist = dpdpa_checklists[section_num]['items']
+
+                    result = analyze_policy_section(section_num, checklist, policy_text)
+
                     with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
                         # Set color for Match Level badge
                         level_color = {
