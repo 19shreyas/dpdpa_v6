@@ -187,6 +187,25 @@ def analyze_policy_section(section_id, checklist, policy_text):
         prompt = create_block_prompt(section_id, block, checklist)
         try:
             result = call_gpt(prompt)
+            # ✅ DEBUG BLOCK — SHOW WHAT GPT RETURNED FOR EACH BLOCK
+            st.markdown("### 🧱 Policy Block Being Evaluated:")
+            st.code(block, language="text")
+            
+            st.markdown("### 🤖 Raw GPT Output:")
+            st.json(result)
+            
+            # Optional: focus only on Checklist Evaluation
+            st.markdown("### 📋 Checklist Evaluation Returned by GPT:")
+            st.json(result.get("Checklist Evaluation", []))
+            
+            # Optional: show which items were matched
+            matched_now = [
+                item for item in result.get("Checklist Evaluation", [])
+                if item["Status"].lower() in ["explicitly mentioned", "partially mentioned"]
+            ]
+            st.markdown("### ✅ Matched Items in This Block:")
+            st.json(matched_now)
+            #############################################
             result["Block"] = block
             all_results.append(result)
         except:
