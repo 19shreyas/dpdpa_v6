@@ -553,10 +553,6 @@ elif menu == "Policy Compliance Checker":
     
                             st.markdown(f"""
                             <div style="margin-bottom: 1rem;">
-                              <b>Compliance Score:</b>
-                              <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                                {result["Compliance Score"]}
-                              </span><br>
                             </div>
                             """, unsafe_allow_html=True)
     
@@ -607,10 +603,6 @@ elif menu == "Policy Compliance Checker":
     
                         st.markdown(f"""
                         <div style="margin-bottom: 1rem;">
-                          <b>Compliance Score:</b>
-                          <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                            {result["Compliance Score"]}
-                          </span><br>
                         </div>
                         """, unsafe_allow_html=True)
     
