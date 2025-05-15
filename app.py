@@ -11,7 +11,7 @@ client = openai.OpenAI(api_key=api_key)
 
 # --- Section Checklists ---
 dpdpa_checklists = {
-    "4 - Grounds for Processing Personal Data": {
+    "4": {
         "title": "Grounds for Processing Personal Data",
         "items": [
             "The policy must state that personal data is processed **only as per the provisions of the Digital Personal Data Protection Act, 2023**.",
@@ -21,7 +21,7 @@ dpdpa_checklists = {
             "Alternatively, the policy must specify that personal data is processed **for certain legitimate uses**, as defined under the Act."
         ]
     },
-    "5 - Notice": {
+    "5": {
         "title": "Notice",
         "items": [
             section_5_checklist = [
@@ -41,7 +41,7 @@ dpdpa_checklists = {
             "The policy must provide the Data Principal an **option to access the contents of the notice** in **English or any language listed in the Eighth Schedule of the Constitution**."
         ]
     },
-    "6 - Consent": {
+    "6": {
         "title": "Consent",
         "items": [
             "The policy must state that **consent is free, specific, informed, unconditional, and unambiguous**, given through a **clear affirmative action**.",
@@ -62,7 +62,7 @@ dpdpa_checklists = {
             "The policy must mention that, in case of dispute, the **Data Fiduciary must prove that proper notice was given and valid consent was obtained** as per the Act and its rules."
         ]
     },
-    "7 - Certain Legitimate Uses": {
+    "7": {
         "title": "Certain Legitimate Uses",
         "items": [
             "The policy must allow personal data to be processed for the **specified purpose for which the Data Principal voluntarily provided the data**, if she has **not indicated non-consent** to such use.",
@@ -78,7 +78,7 @@ dpdpa_checklists = {
             "The policy must allow personal data to be processed for purposes related to **employment**, or to **safeguard the employer from loss or liability**, including prevention of corporate espionage, confidentiality of trade secrets or IP, and enabling services/benefits to employee Data Principals."
         ]
     },
-    "8 - General Obligations of Data Fiduciary": {
+    "8": {
         "title": "General Obligations of Data Fiduciary",
         "items": [
             "The policy must state that the Data Fiduciary is responsible for complying with the Act and its rules, even if the Data Principal fails to perform her duties.",
@@ -96,7 +96,6 @@ dpdpa_checklists = {
             "The policy must clarify that a Data Principal is considered as **not having approached** the Data Fiduciary if she has not initiated contact in person, or through physical or electronic communication, for the purpose within a prescribed period."
         ]
     }
-    # Add similar checklist dicts for sections 5–8
 
 # --- Block Splitter ---
 def break_into_blocks(text):
@@ -126,7 +125,9 @@ def extract_text_from_pdf(pdf_file):
 def create_block_prompt(section_id, block_text, checklist):
     checklist_text = "\n".join(f"- {item}" for item in checklist)
     return f"""
-    You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+    You are a DPDPA compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+
+    Each item below represents a legally required compliance condition under this section. Evaluate the policy block against each item **independently**.
     
     **Checklist:**
     {checklist_text}
@@ -134,16 +135,26 @@ def create_block_prompt(section_id, block_text, checklist):
     **Policy Block:**
     {block_text}
     
-    Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
-    Return output in this format:
+    For **each checklist item**, classify the match as:
+    - **Explicitly Mentioned** – clearly and fully covered in the policy block
+    - **Partially Mentioned** – somewhat covered, but not fully or with vague/incomplete language
+    - **Missing** – not addressed at all
+
+    For each, provide a **brief but clear justification** (quote from the policy if possible).
+
+    Then, respond in **this JSON format**:
     {{
-      "Match Level": "...",
-      "Compliance Score": 0.0,
+      "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
+      "Compliance Score": float (between 0 and 1, based on proportion of checklist items marked Explicitly Mentioned),
       "Checklist Evaluation": [
-        {{"Checklist Item": "...", "Status": "...", "Justification": "..."}}
+        {{
+          "Checklist Item": "...",
+          "Status": "Explicitly Mentioned / Partially Mentioned / Missing",
+          "Justification": "..."
+        }}
       ],
-      "Suggested Rewrite": "...",
-      "Simplified Legal Meaning": "..."
+      "Suggested Rewrite": "Rewrite the policy block to fully satisfy all checklist items using clear, compliant language.",
+      "Simplified Legal Meaning": "Explain this section of the Act in simple, plain English so a layperson can understand its intent."
     }}
     """
 
