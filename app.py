@@ -626,7 +626,8 @@ elif menu == "Policy Compliance Checker":
                             if matches:
                                 for idx, m in enumerate(matches):
                                     match_status = m.get("Status", "Unknown")
-                                    expander_label = f"📄 Block Match {idx + 1} — {match_status}"
+                                    expander_label = f"📄 Block Match {idx + 1} — {str(match_status)}"
+
                                     with st.expander(expander_label):
 
                                         block_color = {
