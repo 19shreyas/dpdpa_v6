@@ -521,8 +521,8 @@ elif menu == "Policy Compliance Checker":
         if policy_text:
             results = []
             with st.spinner("Running GPT-based compliance evaluation..."):
-                 if section_id == "All Sections":
-                     all_section_results = analyze_policy_all_sections(dpdpa_checklists, policy_text)
+                if section_id == "All Sections":
+                    all_section_results = analyze_policy_all_sections(dpdpa_checklists, policy_text)
                 
                      for result in all_section_results:
                          with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
@@ -543,7 +543,7 @@ elif menu == "Policy Compliance Checker":
                                      st.markdown(f"✅ **Status**: `{match['Status']}`")
                                      st.markdown(f"🧠 **Justification**: {match['Justification']}")
                                      st.markdown("---")
-                
+
                 else:
                     subset_checklists = {section_id: dpdpa_checklists[section_id]}
                     section_results = analyze_policy_all_sections(subset_checklists, policy_text)
