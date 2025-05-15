@@ -380,9 +380,7 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
-    
-    /* 🛠 Only change the uploaded filename, not the entire uploader */
-    [data-testid="stFileUploader"] .css-1cpxqw2 {
+    [data-testid="stFileUploader"] div:nth-child(1) > div:nth-child(2) > span {
         color: black !important;
         font-weight: 600 !important;
     }
