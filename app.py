@@ -122,42 +122,68 @@ def extract_text_from_pdf(pdf_file):
     return "\n".join(page.get_text() for page in doc)
 
 # --- Prompt Generator ---
-def create_block_prompt(section_id, block_text, checklist):
-    # checklist_text = "\n".join(f"- {item}" for item in checklist)
-    checklist_text = "\n".join(f"{item['id']}. {item['text']}" for item in checklist)
+def create_block_prompt_all_sections(block_text, checklist_dict):
+    section_prompts = []
+    for section_id, section_info in checklist_dict.items():
+        title = section_info["title"]
+        items = section_info["items"]
+        checklist_lines = "\n".join(f"{item['id']}. {item['text']}" for item in items)
+        section_prompts.append(f"Section {section_id} – {title}:\n{checklist_lines}")
+
+    combined_checklist_text = "\n\n".join(section_prompts)
+
     return f"""
-    You are a DPDPA compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+You are a DPDPA compliance analyst evaluating whether the following privacy policy block meets the requirements of **multiple sections** of the Digital Personal Data Protection Act, 2023.
 
-    Each item below represents a legally required compliance condition under this section. Evaluate the policy block against each item **independently**.
-    
-    **Checklist:**
-    {checklist_text}
-    
-    **Policy Block:**
-    {block_text}
-    
-    For **each checklist item**, classify the match as:
-    - **Explicitly Mentioned** – clearly and fully covered in the policy block
-    - **Partially Mentioned** – somewhat covered, but not fully or with vague/incomplete language
-    - **Missing** – not addressed at all
+Each checklist item below represents a legally mandated compliance condition under its respective section. Evaluate the policy block against each item **independently** and **group your evaluation by section**.
 
-    For each, provide a **brief but clear justification** (quote from the policy if possible).
+---
 
-    Then, respond in **this JSON format**:
-    {{
-      "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
-      "Compliance Score": float (between 0 and 1, based on proportion of checklist items marked Explicitly Mentioned),
-      "Checklist Evaluation": [
-        {{
-          "Checklist Item": "...",
-          "Status": "Explicitly Mentioned / Partially Mentioned / Missing",
-          "Justification": "..."
-        }}
-      ],
-      "Suggested Rewrite": "Rewrite the policy block to fully satisfy all checklist items using clear, compliant language.",
-      "Simplified Legal Meaning": "Explain this section of the Act in simple, plain English so a layperson can understand its intent."
-    }}
-    """
+### 📄 Policy Block:
+\"\"\"{block_text}\"\"\"
+
+---
+
+### 📋 Checklists by Section:
+
+{combined_checklist_text}
+
+---
+
+### ✅ Evaluation Instructions:
+
+For **each checklist item**, classify the match as:
+- **Explicitly Mentioned** – clearly and fully covered in the policy block
+- **Partially Mentioned** – somewhat covered, but not fully or with vague/incomplete language
+- **Missing** – not addressed at all
+
+For each, provide a **brief justification**, quoting or paraphrasing the relevant part of the block.
+
+---
+
+### 💡 Return a single structured JSON in the following format:
+
+{{
+  "4": {{
+    "Title": "...",
+    "Checklist Evaluation": [
+      {{
+        "Checklist Item": "4.1. ...",
+        "Status": "...",
+        "Justification": "..."
+      }},
+      ...
+    ]
+  }},
+  "5": {{
+    "Title": "...",
+    "Checklist Evaluation": [
+      ...
+    ]
+  }},
+  ...
+}}
+"""
 
 # --- GPT Call ---
 def call_gpt(prompt):
@@ -181,63 +207,73 @@ def compute_score_and_level(evaluations, total_items):
         level = "Partially Compliant"
     return round(score, 2), level
 
-def analyze_policy_section(section_id, checklist, policy_text):
+def analyze_policy_all_sections(checklist_dict, policy_text):
     blocks = break_into_blocks(policy_text)
-    all_results = []
-
-    for block in blocks:
-        prompt = create_block_prompt(section_id, block, checklist)
-        try:
-            result = call_gpt(prompt)
-            result["Block"] = block
-            all_results.append(result)
-        except:
-            continue
-
-    matched_items = {}
-    checklist_map = {item["id"]: item["text"] for item in checklist}
-
-    for res in all_results:
-        for item in res.get("Checklist Evaluation", []):
-            checklist_line = item.get("Checklist Item", "").strip()
-            if "." not in checklist_line:
-                continue
-            checklist_id = checklist_line.split(".")[0].strip()
-
-            if checklist_id not in checklist_map:
-                continue
-
-            if checklist_id not in matched_items:
-                matched_items[checklist_id] = {
-                    "Checklist ID": checklist_id,
-                    "Checklist Text": checklist_map[checklist_id],
-                    "Matches": []
-                }
-
-            matched_items[checklist_id]["Matches"].append({
-                "Block": res["Block"],
-                "Status": item["Status"],
-                "Justification": item["Justification"]
-            })
-    # Add empty items too (even if no matches were found)
-    checklist_coverage = []
-    for item in checklist:
-        cid = item["id"]
-        checklist_coverage.append({
-            "Checklist ID": cid,
-            "Checklist Text": item["text"],
-            "Matches": matched_items.get(cid, {}).get("Matches", [])
-        })
-    
-    final_output = {
-        "Section": section_id,
-        "Title": dpdpa_checklists[section_id]['title'],
-        "Checklist Coverage": checklist_coverage,
-        "Suggested Rewrite": all_results[0].get("Suggested Rewrite", ""),
-        "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "")
+    section_map = {sid: info["title"] for sid, info in checklist_dict.items()}
+    checklist_map = {
+        sid: {item["id"]: item["text"] for item in info["items"]}
+        for sid, info in checklist_dict.items()
     }
 
-    return final_output
+    # This stores results like: results["4"]["4.1"]["Matches"] = [...]
+    results = {}
+
+    for block in blocks:
+        prompt = create_block_prompt_all_sections(block, checklist_dict)
+        try:
+            gpt_output = call_gpt(prompt)  # expects JSON with keys "4", "5", etc.
+        except Exception as e:
+            continue  # skip this block if GPT fails
+
+        for sid, section_data in gpt_output.items():
+            if sid not in results:
+                results[sid] = {}
+
+            for eval_item in section_data.get("Checklist Evaluation", []):
+                checklist_line = eval_item.get("Checklist Item", "").strip()
+                if "." not in checklist_line:
+                    continue
+                checklist_id = checklist_line.split(".")[0].strip()
+
+                if checklist_id not in results[sid]:
+                    results[sid][checklist_id] = {
+                        "Checklist ID": checklist_id,
+                        "Checklist Text": checklist_map[sid].get(checklist_id, "UNKNOWN"),
+                        "Matches": []
+                    }
+
+                results[sid][checklist_id]["Matches"].append({
+                    "Block": block,
+                    "Status": eval_item["Status"],
+                    "Justification": eval_item["Justification"]
+                })
+
+    # Final structuring for Streamlit display — 1 section at a time
+    final_outputs = []
+    for sid, items_dict in results.items():
+        section_coverage = []
+        full_checklist = checklist_dict[sid]["items"]
+        checklist_ids = {item["id"] for item in full_checklist}
+
+        # Ensure all items (even with no match) are included
+        for item in full_checklist:
+            cid = item["id"]
+            section_coverage.append({
+                "Checklist ID": cid,
+                "Checklist Text": item["text"],
+                "Matches": items_dict.get(cid, {}).get("Matches", [])
+            })
+
+        final_outputs.append({
+            "Section": sid,
+            "Title": section_map[sid],
+            "Checklist Coverage": section_coverage,
+            "Suggested Rewrite": gpt_output.get(sid, {}).get("Suggested Rewrite", ""),
+            "Simplified Legal Meaning": gpt_output.get(sid, {}).get("Simplified Legal Meaning", "")
+        })
+
+    return final_outputs
+
     
 def set_custom_css():
     st.markdown("""
