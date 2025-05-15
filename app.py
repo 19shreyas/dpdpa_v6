@@ -380,6 +380,15 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
+    st.markdown(
+    /* Try forcing text inside the upload label to be black */
+    [data-testid="stFileUploader"] section div span {
+        color: black !important;
+        font-weight: 600;
+    }
+
+
+
 
 
     </style>
@@ -389,15 +398,6 @@ def set_custom_css():
 st.set_page_config(page_title="DPDPA Compliance Tool", layout="wide")
 set_custom_css()
 st.sidebar.markdown("<h1 style='font-size:42px; font-weight:700;'>Navigation</h1>", unsafe_allow_html=True)
-st.markdown("""
-<style>
-/* Make uploaded file name visible */
-.uploadedFileName {
-    color: #000000 !important;  /* black text */
-    font-weight: 500;
-}
-</style>
-""", unsafe_allow_html=True)
 
 menu = st.sidebar.radio("", [
     "Homepage",
