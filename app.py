@@ -9,12 +9,6 @@ import fitz  # PyMuPDF
 api_key = st.secrets["OPENAI_API_KEY"]
 client = openai.OpenAI(api_key=api_key)
 
-"items": [
-    {"id": "5.1", "text": "The policy must state that..."},
-    {"id": "5.2", "text": "The notice must clearly specify..."},
-]
-
-
 # --- Section Checklists ---
 dpdpa_checklists = {
     "4": {
