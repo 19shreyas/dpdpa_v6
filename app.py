@@ -250,15 +250,6 @@ def analyze_policy_section(section_id, checklist, policy_text):
         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
-st.markdown("""
-    <style>
-    /* Make uploaded file name visible */
-    .uploadedFileName {
-        color: #000000 !important;  /* black text */
-        font-weight: 500;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 def set_custom_css():
     st.markdown("""
@@ -462,6 +453,15 @@ elif menu == "Policy Compliance Checker":
     
     #st.header("1. Upload Your Policy Document")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>1. Upload Your Policy Document</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <style>
+    /* Make uploaded file name visible */
+    .uploadedFileName {
+        color: #000000 !important;  /* black text */
+        font-weight: 500;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     upload_option = st.radio("Choose input method:", ["Paste text", "Upload PDF"])
     if upload_option == "Paste text":
