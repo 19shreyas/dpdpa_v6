@@ -381,17 +381,6 @@ def set_custom_css():
         color: black !important;
     }
 
-    .uploadedFileName {
-    color: #000000 !important;
-    font-weight: 500;
-    }
-    [data-testid="stFileUploader"] section div span {
-        color: black !important;
-        font-weight: 600;
-    }
-
-
-
     </style>
     """, unsafe_allow_html=True)
 
