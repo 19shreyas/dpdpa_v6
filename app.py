@@ -14,65 +14,92 @@ dpdpa_checklists = {
     "4": {
         "title": "Grounds for Processing Personal Data",
         "items": [
-            "Personal data is processed only for a lawful purpose.",
-            "Lawful purpose means a purpose not expressly forbidden by law.",
-            "Lawful purpose must be backed by explicit consent from the Data Principal or fall under legitimate uses."
-        ]
+            "The policy must state that personal data is processed **only as per the provisions of the Digital Personal Data Protection Act, 2023**.",
+            "The policy must confirm that personal data is processed **only for a lawful purpose**.",
+            "The policy must define **lawful purpose** as any purpose **not expressly forbidden by law**.",
+            "The policy must include a statement that personal data is processed **only with the consent of the Data Principal**.",
+            "Alternatively, the policy must specify that personal data is processed **for certain legitimate uses**, as defined under the Act."
+            ]
+
     },
     "5": {
         "title": "Notice",
         "items": [
-            "Notice is provided in clear and plain language.",
-            "Notice is made available before or at the time of data collection.",
-            "Notice includes the purpose of processing personal data.",
-            "Notice specifies the rights of the Data Principal.",
-            "Notice includes details of the Data Fiduciary and means to contact them.",
-            "Notice discloses the manner in which the Data Principal can exercise their rights.",
-            "Notice is accessible in English or any language listed in the Eighth Schedule of the Constitution of India."
-        ]
+            "The policy must state that **every request for consent** is accompanied or preceded by a **notice from the Data Fiduciary to the Data Principal**.",
+            "The notice must clearly specify the **personal data proposed to be processed**.",
+            "The notice must clearly specify the **purpose for which the personal data is proposed to be processed**.",
+            "The notice must explain the **manner in which the Data Principal can exercise her rights under Section 6(4)** (withdrawal of consent).",
+            "The notice must explain the **manner in which the Data Principal can exercise her rights under Section 13** (grievance redressal).",
+            "The notice must specify the **manner in which a complaint can be made to the Data Protection Board**.",
+            "If consent was obtained **before the commencement of the Act**, the policy must state that a notice will be sent **as soon as reasonably practicable**.",
+            "The post-commencement notice must mention the **personal data that has been processed**.",
+            "The post-commencement notice must mention the **purpose for which the personal data has been processed**.",
+            "The post-commencement notice must mention the **manner in which the Data Principal can exercise her rights under Section 6(4)**.",
+            "The post-commencement notice must mention the **manner in which the Data Principal can exercise her rights under Section 13**.",
+            "The post-commencement notice must mention the **manner in which a complaint can be made to the Board**.",
+            "The policy must mention that the Data Fiduciary **may continue to process personal data** until the Data Principal **withdraws her consent**.",
+            "The policy must provide the Data Principal an **option to access the contents of the notice** in **English or any language listed in the Eighth Schedule of the Constitution**."
+            ]
+
     },
     "6": {
         "title": "Consent",
         "items": [
-            "Consent is free (voluntary, not coerced).",
-            "Consent is specific to a clearly defined purpose.",
-            "Consent is informed (based on full information provided beforehand).",
-            "Consent is unambiguous (clearly understood and intentional).",
-            "Consent is given via clear affirmative action.",
-            "Consent is limited to the specified purpose only.",
-            "Only personal data necessary for the purpose is processed.",
-            "Consent is provided before data processing begins.",
-            "Data Principal has the ability to withdraw consent easily and at any time.",
-            "If consent is withdrawn, data processing stops and data is erased unless legally required."
-        ]
+            "The policy must state that **consent is free, specific, informed, unconditional, and unambiguous**, given through a **clear affirmative action**.",
+            "The policy must specify that **consent signifies agreement to process personal data only for the specified purpose**.",
+            "The policy must state that **consent is limited to such personal data as is necessary for the specified purpose**.",
+            "The policy must mention that **any part of the consent that violates this Act, rules under it, or any other law in force is invalid to that extent**.",
+            "The request for consent must be presented in **clear and plain language**.",
+            "The request for consent must allow the Data Principal to access it in **English or any language listed in the Eighth Schedule of the Constitution**.",
+            "The request for consent must provide **contact details of a Data Protection Officer** or **another authorised person** responsible for handling Data Principal queries.",
+            "The policy must clearly state that the **Data Principal has the right to withdraw consent at any time**.",
+            "The **ease of withdrawing consent** must be comparable to the **ease with which consent was given**.",
+            "The policy must mention that **consequences of withdrawal shall be borne by the Data Principal**.",
+            "The policy must state that **withdrawal does not affect the legality of data processing done before withdrawal**.",
+            "The policy must mention that upon withdrawal of consent, the **Data Fiduciary and its Data Processors must cease processing** the personal data **within a reasonable time**, unless permitted by law.",
+            "The policy must state that consent **can be managed, reviewed, or withdrawn through a Consent Manager**.",
+            "The policy must specify that the **Consent Manager is accountable to the Data Principal** and acts on her behalf.",
+            "The policy must specify that **every Consent Manager is registered with the Board** under prescribed conditions.",
+            "The policy must mention that, in case of dispute, the **Data Fiduciary must prove that proper notice was given and valid consent was obtained** as per the Act and its rules."
+            ]
+
     },
     "7": {
         "title": "Certain Legitimate Uses",
         "items": [
-            "Processing is necessary for performance of any function under the law or in the interest of the sovereignty and integrity of India.",
-            "Processing is necessary for compliance with any judgment, order, or decree of any court or tribunal in India.",
-            "Processing is necessary for responding to a medical emergency involving a threat to life or health.",
-            "Processing is necessary for taking measures to ensure safety during any disaster or breakdown of public order.",
-            "Processing is necessary for purposes related to employment or provision of service.",
-            "Processing is necessary for the purpose of public interest such as prevention of fraud, network and information security, or credit scoring.",
-            "Processing is for purposes of corporate governance, mergers, or disclosures under legal obligations.",
-            "Processing is necessary for any fair and reasonable purpose specified by the Data Protection Board."
-        ]
+            "The policy must allow personal data to be processed for the **specified purpose for which the Data Principal voluntarily provided the data**, if she has **not indicated non-consent** to such use.",
+            "The policy must permit personal data to be processed by the State or its instrumentalities for providing or issuing **subsidy, benefit, service, certificate, licence, or permit**, as prescribed, where the Data Principal has **previously consented** to such processing.",
+            "The policy must allow personal data to be processed by the State or its instrumentalities if the data is **already available in digital or digitised form in notified government databases**, subject to prescribed standards and government policies.",
+            "The policy must allow personal data to be processed by the State or its instrumentalities for performing any **legal function** under existing Indian laws or **in the interest of sovereignty and integrity of India or State security**.",
+            "The policy must allow personal data to be processed to **fulfil a legal obligation** requiring any person to disclose information to the State or its instrumentalities, as per applicable laws.",
+            "The policy must permit personal data to be processed for **compliance with any judgment, decree, or order** issued under Indian law, or for **contractual or civil claims under foreign laws**.",
+            "The policy must allow personal data to be processed to **respond to a medical emergency** involving a **threat to life or immediate health risk** of the Data Principal or any individual.",
+            "The policy must allow personal data to be processed to **provide medical treatment or health services** during an **epidemic, outbreak, or other threat to public health**.",
+            "The policy must permit processing of personal data to **ensure safety of or provide assistance/services to individuals** during any **disaster or breakdown of public order**.",
+            "The policy must define 'disaster' in accordance with the **Disaster Management Act, 2005 (Section 2(d))**.",
+            "The policy must allow personal data to be processed for purposes related to **employment**, or to **safeguard the employer from loss or liability**, including prevention of corporate espionage, confidentiality of trade secrets or IP, and enabling services/benefits to employee Data Principals."
+            ]
+
     },
     "8": {
         "title": "General Obligations of Data Fiduciary",
         "items": [
-            "Implements appropriate technical and organizational measures to ensure compliance with DPDPA.",
-            "Maintains data accuracy and completeness to ensure it is up-to-date.",
-            "Implements reasonable security safeguards to prevent personal data breaches.",
-            "Notifies the Data Protection Board and affected Data Principals in the event of a breach.",
-            "Erases personal data as soon as the purpose is fulfilled and retention is no longer necessary.",
-            "Maintains records of processing activities in accordance with prescribed rules.",
-            "Conducts periodic Data Protection Impact Assessments if required.",
-            "Appoints a Data Protection Officer (DPO) if classified as a Significant Data Fiduciary.",
-            "Publishes the business contact information of the DPO or person handling grievances."
-        ]
-    }
+            "The policy must state that the Data Fiduciary is responsible for complying with the Act and its rules, even if the Data Principal fails to perform her duties.",
+            "The policy must state that the Data Fiduciary may engage or involve a Data Processor **only under a valid contract** to process personal data for offering goods or services.",
+            "The policy must ensure that if personal data is used to make a decision affecting the Data Principal, the data must be **complete, accurate, and consistent**.",
+            "The policy must ensure that if personal data is disclosed to another Data Fiduciary, the data must be **complete, accurate, and consistent**.",
+            "The policy must require the Data Fiduciary to implement **appropriate technical and organisational measures** to ensure compliance with the Act and its rules.",
+            "The policy must mandate **reasonable security safeguards** to protect personal data from breaches, including breaches by its Data Processors.",
+            "The policy must state that in the event of a **personal data breach**, the Data Fiduciary shall **inform both the Board and each affected Data Principal** in the prescribed manner.",
+            "The policy must mandate that personal data be **erased upon withdrawal of consent** or as soon as it is reasonable to assume that the **specified purpose is no longer being served**, whichever is earlier.",
+            "The policy must mandate that the Data Fiduciary must **cause its Data Processors to erase the data** when retention is no longer justified.",
+            "The policy must define that the specified purpose is deemed no longer served if the Data Principal has neither **approached the Data Fiduciary for the purpose** nor **exercised her rights** within the prescribed time period.",
+            "The policy must require publishing the **business contact details** of the Data Protection Officer (if applicable) or of an authorised person able to respond to questions about personal data processing.",
+            "The policy must provide an **effective grievance redressal mechanism** for Data Principals.",
+            "The policy must clarify that a Data Principal is considered as **not having approached** the Data Fiduciary if she has not initiated contact in person, or through physical or electronic communication, for the purpose within a prescribed period."
+            ]
+
+        }
     }
     # Add similar checklist dicts for sections 5–8
 
