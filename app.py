@@ -447,54 +447,27 @@ elif menu == "Policy Generator":
 
 # --- Policy Compliance Checker ---
 elif menu == "Policy Compliance Checker":
-    st.markdown("""
-    <style>
-    /* Just a fallback style if JS is blocked */
-    .uploaded-file-name-patch {
-        color: black !important;
-        font-weight: 600 !important;
-    }
-    </style>
-    
-    <script>
-    const waitAndStyle = () => {
-      const check = () => {
-        const spans = window.parent.document.querySelectorAll('[data-testid="stFileUploader"] span');
-        for (const span of spans) {
-          const text = span.textContent || '';
-          if (text.includes('.pdf') || text.includes('.doc') || text.includes('.txt')) {
-            span.style.color = 'black';
-            span.style.fontWeight = '600';
-          }
-        }
-      };
-      setTimeout(check, 1000);  // wait a second after file upload
-    };
-    
-    window.addEventListener('load', waitAndStyle);
-    </script>
-    """, unsafe_allow_html=True)
 
     #st.title("Match Policy to DPDPA")
     st.markdown("<h1 style='font-size:38px; font-weight:800;'>Match Policy to DPDPA</h1>", unsafe_allow_html=True)
     
     #st.header("1. Upload Your Policy Document")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>1. Upload Your Policy Document</h3>", unsafe_allow_html=True)
-    st.markdown("""
-    <style>
-    /* Make uploaded file name visible */
-    .uploadedFileName {
-        color: #000000 !important;  /* black text */
-        font-weight: 500;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     upload_option = st.radio("Choose input method:", ["Paste text", "Upload PDF"])
     if upload_option == "Paste text":
         policy_text = st.text_area("Paste your Privacy Policy text:", height=300)
     elif upload_option == "Upload PDF":
-        uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf")
+        # uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf")
+        uploaded_pdf = st.file_uploader("Upload PDF file", type="pdf", label_visibility="collapsed")
+
+        if uploaded_pdf:
+            # 👇 Custom visible filename
+            st.markdown(f"📄 **Uploaded file:** `{uploaded_pdf.name}`", unsafe_allow_html=True)
+            policy_text = extract_text_from_pdf(uploaded_pdf)
+        else:
+            policy_text = ""
+
         if uploaded_pdf:
             policy_text = extract_text_from_pdf(uploaded_pdf)
         else:
