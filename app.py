@@ -463,15 +463,15 @@ elif menu == "Policy Compliance Checker":
 
         if uploaded_pdf:
             # 👇 Custom visible filename
-            st.markdown(f"📄 **Uploaded file:** `{uploaded_pdf.name}`", unsafe_allow_html=True)
             policy_text = extract_text_from_pdf(uploaded_pdf)
+            st.markdown(f"📄 **Uploaded file:** `{uploaded_pdf.name}`", unsafe_allow_html=True)
         else:
             policy_text = ""
 
-        if uploaded_pdf:
-            policy_text = extract_text_from_pdf(uploaded_pdf)
-        else:
-            policy_text = ""
+        # if uploaded_pdf:
+        #     policy_text = extract_text_from_pdf(uploaded_pdf)
+        # else:
+        #     policy_text = ""
 
     #st.header("2. Choose Matching Level")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>2. Choose Matching Level</h3>", unsafe_allow_html=True)
