@@ -250,6 +250,15 @@ def analyze_policy_section(section_id, checklist, policy_text):
         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
+st.markdown("""
+    <style>
+    /* Make uploaded file name visible */
+    .uploadedFileName {
+        color: #000000 !important;  /* black text */
+        font-weight: 500;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 def set_custom_css():
     st.markdown("""
