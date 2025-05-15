@@ -3,7 +3,7 @@ import openai
 import json
 import pandas as pd
 import re
-import fitz  # PyMuPDF
+import fitz
 
 # --- OpenAI Setup ---
 api_key = st.secrets["OPENAI_API_KEY"]
