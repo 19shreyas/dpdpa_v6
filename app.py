@@ -155,7 +155,6 @@ Return output in this JSON format:
   "Simplified Legal Meaning": "..."
 }}
 """
-
 # --- GPT Call ---
 def call_gpt(prompt):
     response = client.chat.completions.create(
