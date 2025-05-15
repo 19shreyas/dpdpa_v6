@@ -381,6 +381,12 @@ def set_custom_css():
         color: black !important;
     }
     
+    /* 🛠 Only change the uploaded filename, not the entire uploader */
+    [data-testid="stFileUploader"] .css-1cpxqw2 {
+        color: black !important;
+        font-weight: 600 !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
