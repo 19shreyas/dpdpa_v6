@@ -380,10 +380,30 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
-    [data-testid="stFileUploader"] div:nth-child(1) > div:nth-child(2) > span {
+    
+    /* Just a fallback style if JS is blocked */
+    .uploaded-file-name-patch {
         color: black !important;
         font-weight: 600 !important;
     }
+    </style>
+    
+    <script>
+    const waitAndStyle = () => {
+      const check = () => {
+        const spans = window.parent.document.querySelectorAll('[data-testid="stFileUploader"] span');
+        for (const span of spans) {
+          const text = span.textContent || '';
+          if (text.includes('.pdf') || text.includes('.doc') || text.includes('.txt')) {
+            span.style.color = 'black';
+            span.style.fontWeight = '600';
+          }
+        }
+      };
+      setTimeout(check, 1000);  // wait a second after file upload
+    };
+    
+    window.addEventListener('load', waitAndStyle);
 
     </style>
     """, unsafe_allow_html=True)
