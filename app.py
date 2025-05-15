@@ -126,6 +126,7 @@ def create_block_prompt(section_id, block_text, checklist):
     checklist_text = "\n".join(
         f"{item['id']}. {item['text']}" for item in checklist
     )
+
     return f"""
 You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
 
@@ -154,6 +155,7 @@ Return output in this JSON format:
   "Simplified Legal Meaning": "..."
 }}
 """
+
 # --- GPT Call ---
 def call_gpt(prompt):
     response = client.chat.completions.create(
@@ -182,17 +184,10 @@ def analyze_policy_section(section_id, checklist, policy_text):
     all_results = []
 
     id_to_text = {item["id"]: item["text"] for item in checklist}
-
-    # Initialize summary structure for each checklist item
     checklist_summary = {
-        item["id"]: {
-            "Text": item["text"],
-            "BestStatus": "Missing",
-            "BestJustification": "",
-            "BlockMatches": []
-        }
-        for item in checklist
+        item["id"]: {"Status": "Missing", "Justification": ""} for item in checklist
     }
+
     # Run GPT on each block
     for block in blocks:
         prompt = create_block_prompt(section_id, block, checklist)
@@ -205,8 +200,6 @@ def analyze_policy_section(section_id, checklist, policy_text):
 
     # Process results
     for res in all_results:
-        block_text = res.get("Block", "")[:300].strip().replace("\n", " ") + "..."  # Block preview
-
         for eval_item in res.get("Checklist Evaluation", []):
             item_id = eval_item["Checklist Item ID"].strip()
             status = eval_item["Status"].strip()
@@ -215,23 +208,12 @@ def analyze_policy_section(section_id, checklist, policy_text):
             if item_id not in checklist_summary:
                 continue
 
-            summary = checklist_summary[item_id]
-            current_best = summary["BestStatus"]
+            current_status = checklist_summary[item_id]["Status"]
 
-            # Update best status
             if status == "Explicitly Mentioned":
-                summary["BestStatus"] = status
-                summary["BestJustification"] = justification
-            elif status == "Partially Mentioned" and current_best == "Missing":
-                summary["BestStatus"] = status
-                summary["BestJustification"] = justification
-
-            # Store block-level match
-            summary["BlockMatches"].append({
-                "Status": status,
-                "Justification": justification,
-                "BlockPreview": block_text
-            })
+                checklist_summary[item_id] = {"Status": status, "Justification": justification}
+            elif status == "Partially Mentioned" and current_status == "Missing":
+                checklist_summary[item_id] = {"Status": status, "Justification": justification}
 
     # Build final evaluation list
     evaluations = []
@@ -241,15 +223,14 @@ def analyze_policy_section(section_id, checklist, policy_text):
     for item_id, data in checklist_summary.items():
         evaluations.append({
             "Checklist Item ID": item_id,
-            "Checklist Text": data["Text"],
-            "Status": data["BestStatus"],
-            "Justification": data["BestJustification"],
-            "Matches": data["BlockMatches"]
+            "Checklist Text": id_to_text[item_id],
+            "Status": data["Status"],
+            "Justification": data["Justification"]
         })
 
-        if data["BestStatus"] == "Explicitly Mentioned":
+        if data["Status"] == "Explicitly Mentioned":
             matched_count += 1
-        elif data["BestStatus"] == "Partially Mentioned":
+        elif data["Status"] == "Partially Mentioned":
             partial_count += 1
 
     score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
@@ -265,14 +246,10 @@ def analyze_policy_section(section_id, checklist, policy_text):
         "Match Level": level,
         "Compliance Score": round(score, 2),
         "Matched Details": evaluations,
-        "Checklist Items Matched": [
-            f"{e['Checklist Item ID']} — {e['Checklist Text']}"
-            for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]
-        ],
+        "Checklist Items Matched": [f"{e['Checklist Item ID']} — {e['Checklist Text']}" for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
     }
-
 
 def set_custom_css():
     st.markdown("""
@@ -334,6 +311,7 @@ def set_custom_css():
         border-radius: 6px;
         border: none;
     }
+    
         
     /* Only for actual input and textarea fields */
     input, textarea {
@@ -544,30 +522,39 @@ elif menu == "Policy Compliance Checker":
                               </span>
                             </div>
                             """, unsafe_allow_html=True)
+
+
                         
                             st.markdown("### 📋 Checklist Items Matched:")
                             for i, item in enumerate(result["Checklist Items Matched"]):
                                 st.markdown(f"- {item}")
                         
                             st.markdown("### 🔍 Matched Details:")
-                            for item in result["Matched Details"]:
-                                status = item.get("Status", "Missing")
-                                color = {
-                                    "Explicitly Mentioned": "#198754",
-                                    "Partially Mentioned": "#FFC107",
-                                    "Missing": "#DC3545"
-                                }.get(status, "#6c757d")
+                            for detail in result["Matched Details"]:
+                                
+                                status_color = {
+                                    "explicitly mentioned": "#198754",  # green
+                                    "partially mentioned": "#FFC107",   # yellow
+                                    "missing": "#DC3545"                # red
+                                }
+                                
                             
-                                item_id = item.get("Checklist Item ID", "❓")
-                                item_text = item.get("Checklist Text", "❓")
-                                justification = item.get("Justification", "No justification found.")
-                            
-                                st.markdown(f"""
-                            **{item_id} — {item_text}**  
-                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                            <br><small>📝 {justification}</small>
-                            """, unsafe_allow_html=True)
+                                for item in result["Matched Details"]:
+                                    status = item["Status"]
+                                    color = {
+                                        "Explicitly Mentioned": "#198754",
+                                        "Partially Mentioned": "#FFC107",
+                                        "Missing": "#DC3545"
+                                    }.get(status, "#6c757d")
+                                
+                                    st.markdown(f"""
+                                **{item['Checklist Item ID']} — {item['Checklist Text']}**  
+                                <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                                <small>📝 {item['Justification']}</small>
+                                """, unsafe_allow_html=True)
 
+
+                        
                             st.markdown("### ✏️ Suggested Rewrite:")
                             st.info(result["Suggested Rewrite"])
                         
@@ -600,48 +587,33 @@ elif menu == "Policy Compliance Checker":
                           </span>
                         </div>
                         """, unsafe_allow_html=True)
+
                     
                         st.markdown("### 📋 Checklist Items Matched:")
                         for i, item in enumerate(result["Checklist Items Matched"]):
                             st.markdown(f"- {item}")
-                    
+            
                         st.markdown("### 🔍 Matched Details:")
                         for item in result["Matched Details"]:
-                            st.markdown(f"**{item['Checklist Item ID']} — {item['Checklist Text']}**")
-                        
-                            status = item["Status"]
+                            status = item.get("Status", "Missing")
                             color = {
                                 "Explicitly Mentioned": "#198754",
                                 "Partially Mentioned": "#FFC107",
                                 "Missing": "#DC3545"
                             }.get(status, "#6c757d")
                         
+                            item_id = item.get("Checklist Item ID", "❓")
+                            item_text = item.get("Checklist Text", "❓")
+                            justification = item.get("Justification", "No justification found.")
+                        
                             st.markdown(f"""
-                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                            <small>📝 Overall Justification: {item['Justification']}</small>
-                            """, unsafe_allow_html=True)
-                        
-                            # ✅ FIXED EXPANDER PLACEMENT
-                            matches = item.get("Matches", [])
-                            if matches:
-                                for idx, m in enumerate(matches):
-                                    match_status = m.get("Status", "Unknown")
-                                    expander_label = f"📄 Block Match {idx + 1} — {str(match_status)}"
-
-                                    with st.expander(expander_label):
-
-                                        block_color = {
-                                            "Explicitly Mentioned": "#198754",
-                                            "Partially Mentioned": "#FFC107",
-                                            "Missing": "#DC3545"
-                                        }.get(m["Status"], "#6c757d")
-                        
-                                        st.markdown(f"""
-                                        <small>
-                                        <b>Status:</b> <span style="color:white;background-color:{block_color};padding:2px 6px;border-radius:5px;">{m['Status']}</span><br>
-                                        <b>Justification:</b> {m['Justification']}<br>
-                                        <b>Block Preview:</b><br>
-                                        <code style="font-size:12px; white-space:pre-wrap;">{m['BlockPreview']}</code>
-                                        </small>
-                                        """, unsafe_allow_html=True)
-
+                        **{item_id} — {item_text}**  
+                        <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                        <br><small>📝 {justification}</small>
+                        """, unsafe_allow_html=True)
+                    
+                        st.markdown("### ✏️ Suggested Rewrite:")
+                        st.info(result["Suggested Rewrite"])
+                    
+                        st.markdown("### 🧾 Simplified Legal Meaning:")
+                        st.success(result["Simplified Legal Meaning"])
