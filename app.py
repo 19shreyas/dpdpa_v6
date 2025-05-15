@@ -617,29 +617,27 @@ elif menu == "Policy Compliance Checker":
                             }.get(status, "#6c757d")
                         
                             st.markdown(f"""
-                        <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                        <small>📝 Overall Justification: {item['Justification']}</small>
-                        """, unsafe_allow_html=True)
+                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                            <small>📝 Overall Justification: {item['Justification']}</small>
+                            """, unsafe_allow_html=True)
                         
-                            with st.expander("🔍 Block-level Matches"):
-                                for m in item["Matches"]:
-                                    color = {
-                                        "Explicitly Mentioned": "#198754",
-                                        "Partially Mentioned": "#FFC107",
-                                        "Missing": "#DC3545"
-                                    }.get(m["Status"], "#6c757d")
+                            # ✅ FIXED EXPANDER PLACEMENT
+                            matches = item.get("Matches", [])
+                            if matches:
+                                for idx, m in enumerate(matches):
+                                    with st.expander(f"📄 Block Match {idx + 1} — {m['Status']}"):
+                                        block_color = {
+                                            "Explicitly Mentioned": "#198754",
+                                            "Partially Mentioned": "#FFC107",
+                                            "Missing": "#DC3545"
+                                        }.get(m["Status"], "#6c757d")
                         
-                                    st.markdown(f"""
-                        <small>
-                        <b>Status:</b> <span style="color:white;background-color:{color};padding:2px 6px;border-radius:5px;">{m['Status']}</span><br>
-                        <b>Justification:</b> {m['Justification']}<br>
-                        <b>Block Preview:</b><br>
-                        <code style="font-size:12px; white-space:pre-wrap;">{m['BlockPreview']}</code>
-                        </small>
-                        """, unsafe_allow_html=True)
-  
-                        st.markdown("### ✏️ Suggested Rewrite:")
-                        st.info(result["Suggested Rewrite"])
-                    
-                        st.markdown("### 🧾 Simplified Legal Meaning:")
-                        st.success(result["Simplified Legal Meaning"])
+                                        st.markdown(f"""
+                                        <small>
+                                        <b>Status:</b> <span style="color:white;background-color:{block_color};padding:2px 6px;border-radius:5px;">{m['Status']}</span><br>
+                                        <b>Justification:</b> {m['Justification']}<br>
+                                        <b>Block Preview:</b><br>
+                                        <code style="font-size:12px; white-space:pre-wrap;">{m['BlockPreview']}</code>
+                                        </small>
+                                        """, unsafe_allow_html=True)
+
