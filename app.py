@@ -549,8 +549,8 @@ elif menu == "Policy Compliance Checker":
                                 "Partially Compliant": "#FFC107",
                                 "Non-Compliant": "#DC3545"
                             }
-                            match_level = result["Match Level"]
-                            color = level_color.get(match_level, "#6C757D")
+                            # match_level = result["Match Level"]
+                            # color = level_color.get(match_level, "#6C757D")
     
                             st.markdown(f"""
                             <div style="margin-bottom: 1rem;">
@@ -558,9 +558,9 @@ elif menu == "Policy Compliance Checker":
                               <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
                                 {result["Compliance Score"]}
                               </span><br>
-                              <b>Match Level:</b>
-                              <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                                {match_level}
+                              # <b>Match Level:</b>
+                              # <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                              #   {match_level}
                               </span>
                             </div>
                             """, unsafe_allow_html=True)
@@ -609,8 +609,8 @@ elif menu == "Policy Compliance Checker":
                             "Partially Compliant": "#FFC107",
                             "Non-Compliant": "#DC3545"
                         }
-                        match_level = result["Match Level"]
-                        color = level_color.get(match_level, "#6C757D")
+                        # match_level = result["Match Level"]
+                        # color = level_color.get(match_level, "#6C757D")
     
                         st.markdown(f"""
                         <div style="margin-bottom: 1rem;">
@@ -618,9 +618,9 @@ elif menu == "Policy Compliance Checker":
                           <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
                             {result["Compliance Score"]}
                           </span><br>
-                          <b>Match Level:</b>
-                          <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                            {match_level}
+                          # <b>Match Level:</b>
+                          # <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                          #   {match_level}
                           </span>
                         </div>
                         """, unsafe_allow_html=True)
