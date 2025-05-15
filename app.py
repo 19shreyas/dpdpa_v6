@@ -553,15 +553,19 @@ elif menu == "Policy Compliance Checker":
                         
                             st.markdown("### 📋 Checklist Evaluation")
                         
-                            for i, item in enumerate(result["Checklist Coverage"]):
+                            for i, item in enumerate(result.get("Checklist Coverage", [])):
                                 st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
-                        
+                            
+                                if not item.get("Matches"):
+                                    st.markdown("*No blocks matched this checklist item.*")
+                                    continue
+                            
                                 for match in item["Matches"]:
-                                    with st.container():
-                                        st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
-                                        st.markdown(f"✅ **Status**: `{match['Status']}`")
-                                        st.markdown(f"🧠 **Justification**: {match['Justification']}")
-                                        st.markdown("---")
+                                    st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
+                                    st.markdown(f"✅ **Status**: `{match['Status']}`")
+                                    st.markdown(f"🧠 **Justification**: {match['Justification']}")
+                                    st.markdown("---")
+
 
                 
                 else:
@@ -578,11 +582,14 @@ elif menu == "Policy Compliance Checker":
                     
                         st.markdown("### 📋 Checklist Evaluation")
                     
-                        for i, item in enumerate(result["Checklist Coverage"]):
-                            st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
-                    
-                            for match in item["Matches"]:
-                                with st.container():
+                        for i, item in enumerate(result.get("Checklist Coverage", [])):
+                                st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
+                            
+                                if not item.get("Matches"):
+                                    st.markdown("*No blocks matched this checklist item.*")
+                                    continue
+                            
+                                for match in item["Matches"]:
                                     st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
                                     st.markdown(f"✅ **Status**: `{match['Status']}`")
                                     st.markdown(f"🧠 **Justification**: {match['Justification']}")
