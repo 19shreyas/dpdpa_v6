@@ -380,10 +380,7 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
-    [data-testid="stFileUploader"] span {
-    color: black !important;
-    font-weight: 600;
-    }
+    
     </style>
     """, unsafe_allow_html=True)
 
