@@ -521,39 +521,34 @@ elif menu == "Policy Compliance Checker":
         if policy_text:
             results = []
             with st.spinner("Running GPT-based compliance evaluation..."):
-                if section_id == "All Sections":
-                    for sid in dpdpa_checklists:
-                        st.markdown(f"### Section {sid} — {dpdpa_checklists[sid]['title']}")
-                        result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
-                        
-                        with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-
-                            st.markdown("### 🧾 Simplified Legal Meaning")
-                            st.info(result.get("Simplified Legal Meaning", "Not available."))
-                        
-                            st.markdown("### 🛠 Suggested Rewrite")
-                            st.code(result.get("Suggested Rewrite", "Not available."), language="markdown")
-                        
-                            st.markdown("### 📋 Checklist Evaluation")
-                        
-                            for i, item in enumerate(result.get("Checklist Coverage", [])):
-                                st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
-                            
-                                if not item.get("Matches"):
-                                    st.markdown("*No blocks matched this checklist item.*")
-                                    continue
-                            
-                                for match in item["Matches"]:
-                                    st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
-                                    st.markdown(f"✅ **Status**: `{match['Status']}`")
-                                    st.markdown(f"🧠 **Justification**: {match['Justification']}")
-                                    st.markdown("---")
-
-
+                 if section_id == "All Sections":
+                     all_section_results = analyze_policy_all_sections(dpdpa_checklists, policy_text)
+                
+                     for result in all_section_results:
+                         with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
+                             st.markdown("### 🧾 Simplified Legal Meaning")
+                             st.info(result.get("Simplified Legal Meaning", "Not available."))
+                
+                             st.markdown("### 🛠 Suggested Rewrite")
+                             st.code(result.get("Suggested Rewrite", "Not available."), language="markdown")
+                
+                             st.markdown("### 📋 Checklist Evaluation")
+                             for item in result.get("Checklist Coverage", []):
+                                 st.markdown(f"**{item['Checklist ID']}. {item['Checklist Text']}**")
+                                 if not item.get("Matches"):
+                                     st.markdown("*No blocks matched this checklist item.*")
+                                     continue
+                                 for match in item["Matches"]:
+                                     st.markdown(f"🧱 **Block**:\n\n> {match['Block']}")
+                                     st.markdown(f"✅ **Status**: `{match['Status']}`")
+                                     st.markdown(f"🧠 **Justification**: {match['Justification']}")
+                                     st.markdown("---")
                 
                 else:
-                    checklist = dpdpa_checklists[section_id]['items']
-                    result = analyze_policy_section(section_id, checklist, policy_text)
+                    subset_checklists = {section_id: dpdpa_checklists[section_id]}
+                    section_results = analyze_policy_all_sections(subset_checklists, policy_text)
+                    result = section_results[0] if section_results else {}
+
 
                     st.json(result)
     
