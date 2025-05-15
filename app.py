@@ -380,13 +380,11 @@ def set_custom_css():
         background-color: white !important;
         color: black !important;
     }
-    st.markdown(
-    /* Try forcing text inside the upload label to be black */
-    [data-testid="stFileUploader"] section div span {
-        color: black !important;
-        font-weight: 600;
-    }
 
+    .uploadedFileName {
+    color: #000000 !important;
+    font-weight: 500;
+    }
 
 
 
