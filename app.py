@@ -656,13 +656,6 @@ elif menu == "Policy Compliance Checker":
                     checklist = dpdpa_checklists[section_num]['items']
 
                     result = analyze_policy_section(section_num, checklist, policy_text)
-
-                    st.markdown("### 📄 Policy Analyzed")
-                    
-                    with st.expander("Click to view full policy text", expanded=False):
-                        st.code(policy_text, language="markdown")
-
-
                     with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
                         # Set color for Match Level badge
                         level_color = {
