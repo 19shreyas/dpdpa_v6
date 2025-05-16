@@ -97,66 +97,12 @@ dpdpa_checklists = {
     }
 }
 
-# --- Block Splitter ---
-def break_into_blocks(text):
-    lines = text.splitlines()
-    blocks, current_block = [], []
-    for line in lines:
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if re.match(r'^([A-Z][A-Za-z\s]+|[0-9]+\.\s.*)$', stripped):
-            if current_block:
-                blocks.append(' '.join(current_block).strip())
-                current_block = []
-            current_block.append(stripped)
-        else:
-            current_block.append(stripped)
-    if current_block:
-        blocks.append(' '.join(current_block).strip())
-    return blocks
-
 # --- PDF Extractor ---
 def extract_text_from_pdf(pdf_file):
     doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
     return "\n".join(page.get_text() for page in doc)
 
 # --- Prompt Generator ---
-def create_block_prompt(section_id, block_text, checklist):
-    checklist_text = "\n".join(
-        f"{item['id']}. {item['text']}" for item in checklist
-    )
-
-    return f"""
-    You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
-    
-    **Checklist:** Use the item numbers (e.g., 4.1, 4.2...) from the checklist below in your response. Do not rephrase or modify the checklist items. Evaluate strictly based on the original items.
-    
-    {checklist_text}
-    
-    **Policy Block:**
-    {block_text}
-    
-    Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
-    
-    Return output in this JSON format:
-    {{
-      "Checklist Evaluation": [
-        {{
-          "Checklist Item ID": "4.1",
-          "Status": "Explicitly Mentioned",
-          "Justification": "..."
-        }},
-        ...
-      ],
-      "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
-      "Compliance Score": 0.0,
-      "Suggested Rewrite": "...",
-      "Simplified Legal Meaning": "..."
-    }}
-    
-    Only return the JSON object. Do not include any commentary or explanation.
-    """
 def create_full_policy_prompt(section_id, full_policy_text, checklist):
     checklist_text = "\n".join(
         f"{item['id']}. {item['text']}" for item in checklist
@@ -196,7 +142,6 @@ def create_full_policy_prompt(section_id, full_policy_text, checklist):
     
     Only return the JSON object. Do not include any commentary or explanation.
     """
-
 # --- GPT Call ---
 def call_gpt(prompt, model="gpt-4"):
     response = client.chat.completions.create(
@@ -205,92 +150,6 @@ def call_gpt(prompt, model="gpt-4"):
         temperature=0
     )
     return json.loads(response.choices[0].message.content)
-
-# --- Scoring Logic ---
-def compute_score_and_level(evaluations, total_items):
-    matched = [e for e in evaluations if e["Status"].lower() == "explicitly mentioned"]
-    partial = [e for e in evaluations if e["Status"].lower() == "partially mentioned"]
-    score = (len(matched) + 0.5 * len(partial)) / total_items if total_items else 0.0
-    if score >= 1.0:
-        level = "Fully Compliant"
-    elif score == 0:
-        level = "Non-Compliant"
-    else:
-        level = "Partially Compliant"
-    return round(score, 2), level
-
-# --- Analyzer ---
-# def analyze_policy_section(section_id, checklist, policy_text):
-#     blocks = break_into_blocks(policy_text)
-#     all_results = []
-
-#     id_to_text = {item["id"]: item["text"] for item in checklist}
-#     checklist_summary = {
-#         item["id"]: {"Status": "Missing", "Justification": ""} for item in checklist
-#     }
-
-#     # Run GPT on each block
-#     for block in blocks:
-#         prompt = create_block_prompt(section_id, block, checklist)
-#         try:
-#             result = call_gpt(prompt)
-#             result["Block"] = block
-#             all_results.append(result)
-#         except:
-#             continue
-
-#     # Process results
-#     for res in all_results:
-#         for eval_item in res.get("Checklist Evaluation", []):
-#             item_id = eval_item["Checklist Item ID"].strip()
-#             status = eval_item["Status"].strip()
-#             justification = eval_item["Justification"].strip()
-
-#             if item_id not in checklist_summary:
-#                 continue
-
-#             current_status = checklist_summary[item_id]["Status"]
-
-#             if status == "Explicitly Mentioned":
-#                 checklist_summary[item_id] = {"Status": status, "Justification": justification}
-#             elif status == "Partially Mentioned" and current_status == "Missing":
-#                 checklist_summary[item_id] = {"Status": status, "Justification": justification}
-
-#     # Build final evaluation list
-#     evaluations = []
-#     matched_count = 0
-#     partial_count = 0
-
-#     for item_id, data in checklist_summary.items():
-#         evaluations.append({
-#             "Checklist Item ID": item_id,
-#             "Checklist Text": id_to_text[item_id],
-#             "Status": data["Status"],
-#             "Justification": data["Justification"]
-#         })
-
-#         if data["Status"] == "Explicitly Mentioned":
-#             matched_count += 1
-#         elif data["Status"] == "Partially Mentioned":
-#             partial_count += 1
-
-#     score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
-#     level = (
-#         "Fully Compliant" if score == 1 else
-#         "Non-Compliant" if score == 0 else
-#         "Partially Compliant"
-#     )
-
-#     return {
-#         "Section": section_id,
-#         "Title": dpdpa_checklists[section_id]['title'],
-#         "Match Level": level,
-#         "Compliance Score": round(score, 2),
-#         "Matched Details": evaluations,
-#         "Checklist Items Matched": [f"{e['Checklist Item ID']} — {e['Checklist Text']}" for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
-#         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
-#         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
-#     }
 
 def analyze_policy_section(section_id, checklist, policy_text, model="gpt-4"):
     prompt = create_full_policy_prompt(section_id, policy_text, checklist)
@@ -352,7 +211,6 @@ def analyze_policy_section(section_id, checklist, policy_text, model="gpt-4"):
         "Simplified Legal Meaning": result.get("Simplified Legal Meaning", "")
     }
 
-
 def set_custom_css():
     st.markdown("""
     <style>
@@ -397,7 +255,6 @@ def set_custom_css():
         color: white !important;
     }
 
-
     /* Fix Browse files button text inside file uploader */
     .stFileUploader button,
     .stFileUploader label {
@@ -413,7 +270,6 @@ def set_custom_css():
         border-radius: 6px;
         border: none;
     }
-    
         
     /* Only for actual input and textarea fields */
     input, textarea {
@@ -429,7 +285,6 @@ def set_custom_css():
         color: #2E2E38 !important;
     }
 
-    
     /* For Streamlit selectboxes */
     div[data-baseweb="select"] {
         background-color: #2E2E38 !important;
@@ -574,7 +429,6 @@ elif menu == "Policy Compliance Checker":
             policy_text = extract_text_from_pdf(uploaded_pdf)
         else:
             policy_text = ""
-
 
     #st.header("4. Industry Context (Optional)")
     st.markdown("<h3 style='font-size:24px; font-weight:700;'>2. Industry Context (Optional)</h3>", unsafe_allow_html=True)
