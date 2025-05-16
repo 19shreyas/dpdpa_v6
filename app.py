@@ -631,9 +631,9 @@ elif menu == "Policy Compliance Checker":
                         pdf.chapter_title("GPT-Suggested Rewrite:")
                         pdf.chapter_body(result.get("Suggested Rewrite", ""))
                         
-                        pdf_bytes = io.BytesIO()
-                        pdf.output(pdf_bytes)
-                        pdf_bytes.seek(0)
+                        pdf_string = pdf.output(dest='S').encode('latin-1')
+                        pdf_bytes = io.BytesIO(pdf_string)
+
                         
                         st.download_button(
                             label="📥 Download Formatted PDF Report",
