@@ -344,6 +344,10 @@ def set_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
+def clean_latin1(text):
+    return text.encode("latin-1", "replace").decode("latin-1")
+
+
 # --- Sidebar Navigation ---
 st.set_page_config(page_title="DPDPA Compliance Tool", layout="wide")
 set_custom_css()
@@ -605,13 +609,13 @@ elif menu == "Policy Compliance Checker":
                         pdf = PDF()
                         pdf.add_page()
                         
-                        pdf.chapter_title(f"Section: {result['Section']} — {result['Title']}")
-                        pdf.chapter_body(f"Compliance Score: {result['Compliance Score']}")
-                        pdf.chapter_body(f"Match Level: {result['Match Level']}")
+                        pdf.chapter_title(clean_latin1(f"Section: {result['Section']} — {result['Title']}"))
+                        pdf.chapter_body(clean_latin1(f"Compliance Score: {result['Compliance Score']}"))
+                        pdf.chapter_body(clean_latin1(f"Match Level: {result['Match Level']}"))
                         
                         pdf.chapter_title("Checklist Items Matched:")
                         for item in result["Checklist Items Matched"]:
-                            pdf.chapter_body(f"- {item}")
+                            pdf.chapter_body(clean_latin1(f"- {item}"))
                         
                         pdf.chapter_title("Matched Details:")
                         for item in result["Matched Details"]:
@@ -619,13 +623,13 @@ elif menu == "Policy Compliance Checker":
                             item_id = item["Checklist Item ID"]
                             justification = item["Justification"]
                             text = item["Checklist Text"]
-                            pdf.chapter_body(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n")
+                            pdf.chapter_body(clean_latin1(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n"))
                         
                         pdf.chapter_title("Simplified Legal Meaning:")
-                        pdf.chapter_body(result.get("Simplified Legal Meaning", ""))
+                        pdf.chapter_body(clean_latin1(result.get("Simplified Legal Meaning", "")))
                         
                         pdf.chapter_title("GPT-Suggested Rewrite:")
-                        pdf.chapter_body(result.get("Suggested Rewrite", ""))
+                        pdf.chapter_body(clean_latin1(result.get("Suggested Rewrite", "")))
                         
                         pdf_bytes = io.BytesIO()
                         pdf.output(pdf_bytes)
