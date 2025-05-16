@@ -596,26 +596,26 @@ elif menu == "Policy Compliance Checker":
                         class PDF(FPDF):
                             def header(self):
                                 self.set_font("Arial", "B", 12)
-                                self.cell(0, 10, f"DPDPA Compliance Report – Section {result['Section']}", ln=True, align="C")
+                                self.cell(0, 10, clean_latin1(f"DPDPA Compliance Report – Section {result['Section']}"), ln=True, align="C")
                         
                             def chapter_title(self, title):
                                 self.set_font("Arial", "B", 11)
-                                self.cell(0, 8, title, ln=True, align="L")
+                                self.cell(0, 8, clean_latin1(title), ln=True, align="L")
                         
                             def chapter_body(self, text):
                                 self.set_font("Arial", "", 10)
-                                self.multi_cell(0, 8, text)
+                                self.multi_cell(0, 8, clean_latin1(text))
                         
                         pdf = PDF()
                         pdf.add_page()
                         
-                        pdf.chapter_title(clean_latin1(f"Section: {result['Section']} — {result['Title']}"))
-                        pdf.chapter_body(clean_latin1(f"Compliance Score: {result['Compliance Score']}"))
-                        pdf.chapter_body(clean_latin1(f"Match Level: {result['Match Level']}"))
+                        pdf.chapter_title(f"Section: {result['Section']} — {result['Title']}")
+                        pdf.chapter_body(f"Compliance Score: {result['Compliance Score']}")
+                        pdf.chapter_body(f"Match Level: {result['Match Level']}")
                         
                         pdf.chapter_title("Checklist Items Matched:")
                         for item in result["Checklist Items Matched"]:
-                            pdf.chapter_body(clean_latin1(f"- {item}"))
+                            pdf.chapter_body(f"- {item}"))
                         
                         pdf.chapter_title("Matched Details:")
                         for item in result["Matched Details"]:
@@ -623,13 +623,13 @@ elif menu == "Policy Compliance Checker":
                             item_id = item["Checklist Item ID"]
                             justification = item["Justification"]
                             text = item["Checklist Text"]
-                            pdf.chapter_body(clean_latin1(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n"))
+                            pdf.chapter_body(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n")
                         
                         pdf.chapter_title("Simplified Legal Meaning:")
-                        pdf.chapter_body(clean_latin1(result.get("Simplified Legal Meaning", "")))
+                        pdf.chapter_body(result.get("Simplified Legal Meaning", ""))
                         
                         pdf.chapter_title("GPT-Suggested Rewrite:")
-                        pdf.chapter_body(clean_latin1(result.get("Suggested Rewrite", "")))
+                        pdf.chapter_body(result.get("Suggested Rewrite", ""))
                         
                         pdf_bytes = io.BytesIO()
                         pdf.output(pdf_bytes)
