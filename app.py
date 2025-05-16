@@ -154,12 +154,15 @@ Return output in this JSON format:
   "Suggested Rewrite": "...",
   "Simplified Legal Meaning": "..."
 }}
+
+Only return the JSON object. Do not include any commentary or explanation.
 """
 
+
 # --- GPT Call ---
-def call_gpt(prompt):
+def call_gpt(prompt, model="gpt-4"):
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model=model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
