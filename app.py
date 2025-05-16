@@ -519,131 +519,131 @@ elif menu == "Policy Compliance Checker":
                     result = analyze_policy_section(section_num, checklist, policy_text)
                     st.session_state["last_result"] = result
                     if "last_result" in st.session_state:
-                      result = st.session_state["last_result"]
-    # Render output + export buttons here
-
-                      with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                          # Set color for Match Level badge
-                          level_color = {
-                              "Fully Compliant": "#198754",     # green
-                              "Partially Compliant": "#FFC107", # yellow
-                              "Non-Compliant": "#DC3545"        # red
-                          }
-                          match_level = result["Match Level"]
-                          color = level_color.get(match_level, "#6C757D")  # fallback grey
-                          
-                          st.markdown(f"""
-                          <div style="margin-bottom: 1rem;">
-                            <b>Compliance Score:</b>
-                            <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                              {result["Compliance Score"]}
-                            </span><br>
-                            <b>Match Level:</b>
-                            <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
-                              {match_level}
-                            </span>
-                          </div>
-                          """, unsafe_allow_html=True)
+                        result = st.session_state["last_result"]
+      # Render output + export buttons here
   
-                      
-                          st.markdown("### 📋 Checklist Items Matched:")
-                          for i, item in enumerate(result["Checklist Items Matched"]):
-                              st.markdown(f"- {item}")
-              
-                          st.markdown("### 🔍 Matched Details:")
-                          for item in result["Matched Details"]:
-                              status = item.get("Status", "Missing")
-                              color = {
-                                  "Explicitly Mentioned": "#198754",
-                                  "Partially Mentioned": "#FFC107",
-                                  "Missing": "#DC3545"
-                              }.get(status, "#6c757d")
-                          
-                              item_id = item.get("Checklist Item ID", "❓")
-                              item_text = item.get("Checklist Text", "❓")
-                              justification = item.get("Justification", "No justification found.")
-                          
-                              st.markdown(f"""
-                          **{item_id} — {item_text}**  
-                          <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                          <br><small>📝 {justification}</small>
-                          """, unsafe_allow_html=True)
-                      
-                          st.markdown("### ✏️ Suggested Rewrite:")
-                          st.info(result["Suggested Rewrite"])
-                      
-                          st.markdown("### 🧾 Simplified Legal Meaning:")
-                          st.success(result["Simplified Legal Meaning"])
+                        with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
+                            # Set color for Match Level badge
+                            level_color = {
+                                "Fully Compliant": "#198754",     # green
+                                "Partially Compliant": "#FFC107", # yellow
+                                "Non-Compliant": "#DC3545"        # red
+                            }
+                            match_level = result["Match Level"]
+                            color = level_color.get(match_level, "#6C757D")  # fallback grey
+                            
+                            st.markdown(f"""
+                            <div style="margin-bottom: 1rem;">
+                              <b>Compliance Score:</b>
+                              <span style="background-color:#0d6efd; color:white; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                                {result["Compliance Score"]}
+                              </span><br>
+                              <b>Match Level:</b>
+                              <span style="background-color:{color}; color:black; padding:4px 10px; border-radius:5px; font-size:0.85rem;">
+                                {match_level}
+                              </span>
+                            </div>
+                            """, unsafe_allow_html=True)
+    
+                        
+                            st.markdown("### 📋 Checklist Items Matched:")
+                            for i, item in enumerate(result["Checklist Items Matched"]):
+                                st.markdown(f"- {item}")
+                
+                            st.markdown("### 🔍 Matched Details:")
+                            for item in result["Matched Details"]:
+                                status = item.get("Status", "Missing")
+                                color = {
+                                    "Explicitly Mentioned": "#198754",
+                                    "Partially Mentioned": "#FFC107",
+                                    "Missing": "#DC3545"
+                                }.get(status, "#6c757d")
+                            
+                                item_id = item.get("Checklist Item ID", "❓")
+                                item_text = item.get("Checklist Text", "❓")
+                                justification = item.get("Justification", "No justification found.")
+                            
+                                st.markdown(f"""
+                            **{item_id} — {item_text}**  
+                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                            <br><small>📝 {justification}</small>
+                            """, unsafe_allow_html=True)
+                        
+                            st.markdown("### ✏️ Suggested Rewrite:")
+                            st.info(result["Suggested Rewrite"])
+                        
+                            st.markdown("### 🧾 Simplified Legal Meaning:")
+                            st.success(result["Simplified Legal Meaning"])
+    
+                            # --- JSON Export ---
+                            json_str = json.dumps(result, indent=2)
+                            json_bytes = io.BytesIO(json_str.encode("utf-8"))
+                            st.download_button(
+                                label="📥 Download JSON Report",
+                                data=json_bytes,
+                                file_name=f"DPDPA_Section_{result['Section']}.json",
+                                mime="application/json"
+                            )
+                            
+                            # --- CSV Export ---
+                            csv_df = pd.DataFrame(result["Matched Details"])
+                            csv_bytes = io.BytesIO()
+                            csv_df.to_csv(csv_bytes, index=False)
+                            csv_bytes.seek(0)
+                            st.download_button(
+                                label="📥 Download Checklist Evaluation CSV",
+                                data=csv_bytes,
+                                file_name=f"DPDPA_Section_{result['Section']}.csv",
+                                mime="text/csv"
+                            )
+                            
+                            # --- PDF Export ---
+                            class PDF(FPDF):
+                                def header(self):
+                                    self.set_font("Arial", "B", 12)
+                                    self.cell(0, 10, clean_latin1(f"DPDPA Compliance Report – Section {result['Section']}"), ln=True, align="C")
+                            
+                                def chapter_title(self, title):
+                                    self.set_font("Arial", "B", 11)
+                                    self.cell(0, 8, clean_latin1(title), ln=True, align="L")
+                            
+                                def chapter_body(self, text):
+                                    self.set_font("Arial", "", 10)
+                                    self.multi_cell(0, 8, clean_latin1(text))
+                            
+                            pdf = PDF()
+                            pdf.add_page()
+                            
+                            pdf.chapter_title(f"Section: {result['Section']} — {result['Title']}")
+                            pdf.chapter_body(f"Compliance Score: {result['Compliance Score']}")
+                            pdf.chapter_body(f"Match Level: {result['Match Level']}")
+                            
+                            pdf.chapter_title("Checklist Items Matched:")
+                            for item in result["Checklist Items Matched"]:
+                                pdf.chapter_body(f"- {item}")
+                            
+                            pdf.chapter_title("Matched Details:")
+                            for item in result["Matched Details"]:
+                                status = item["Status"]
+                                item_id = item["Checklist Item ID"]
+                                justification = item["Justification"]
+                                text = item["Checklist Text"]
+                                pdf.chapter_body(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n")
+                            
+                            pdf.chapter_title("Simplified Legal Meaning:")
+                            pdf.chapter_body(result.get("Simplified Legal Meaning", ""))
+                            
+                            pdf.chapter_title("GPT-Suggested Rewrite:")
+                            pdf.chapter_body(result.get("Suggested Rewrite", ""))
+                            
+                            pdf_string = pdf.output(dest='S').encode('latin-1')
+                            pdf_bytes = io.BytesIO(pdf_string)
+    
+                            
+                            st.download_button(
+                                label="📥 Download Formatted PDF Report",
+                                data=pdf_bytes,
+                                file_name=f"DPDPA_Section_{result['Section']}.pdf",
+                                mime="application/pdf"
+                            )
   
-                          # --- JSON Export ---
-                          json_str = json.dumps(result, indent=2)
-                          json_bytes = io.BytesIO(json_str.encode("utf-8"))
-                          st.download_button(
-                              label="📥 Download JSON Report",
-                              data=json_bytes,
-                              file_name=f"DPDPA_Section_{result['Section']}.json",
-                              mime="application/json"
-                          )
-                          
-                          # --- CSV Export ---
-                          csv_df = pd.DataFrame(result["Matched Details"])
-                          csv_bytes = io.BytesIO()
-                          csv_df.to_csv(csv_bytes, index=False)
-                          csv_bytes.seek(0)
-                          st.download_button(
-                              label="📥 Download Checklist Evaluation CSV",
-                              data=csv_bytes,
-                              file_name=f"DPDPA_Section_{result['Section']}.csv",
-                              mime="text/csv"
-                          )
-                          
-                          # --- PDF Export ---
-                          class PDF(FPDF):
-                              def header(self):
-                                  self.set_font("Arial", "B", 12)
-                                  self.cell(0, 10, clean_latin1(f"DPDPA Compliance Report – Section {result['Section']}"), ln=True, align="C")
-                          
-                              def chapter_title(self, title):
-                                  self.set_font("Arial", "B", 11)
-                                  self.cell(0, 8, clean_latin1(title), ln=True, align="L")
-                          
-                              def chapter_body(self, text):
-                                  self.set_font("Arial", "", 10)
-                                  self.multi_cell(0, 8, clean_latin1(text))
-                          
-                          pdf = PDF()
-                          pdf.add_page()
-                          
-                          pdf.chapter_title(f"Section: {result['Section']} — {result['Title']}")
-                          pdf.chapter_body(f"Compliance Score: {result['Compliance Score']}")
-                          pdf.chapter_body(f"Match Level: {result['Match Level']}")
-                          
-                          pdf.chapter_title("Checklist Items Matched:")
-                          for item in result["Checklist Items Matched"]:
-                              pdf.chapter_body(f"- {item}")
-                          
-                          pdf.chapter_title("Matched Details:")
-                          for item in result["Matched Details"]:
-                              status = item["Status"]
-                              item_id = item["Checklist Item ID"]
-                              justification = item["Justification"]
-                              text = item["Checklist Text"]
-                              pdf.chapter_body(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n")
-                          
-                          pdf.chapter_title("Simplified Legal Meaning:")
-                          pdf.chapter_body(result.get("Simplified Legal Meaning", ""))
-                          
-                          pdf.chapter_title("GPT-Suggested Rewrite:")
-                          pdf.chapter_body(result.get("Suggested Rewrite", ""))
-                          
-                          pdf_string = pdf.output(dest='S').encode('latin-1')
-                          pdf_bytes = io.BytesIO(pdf_string)
-  
-                          
-                          st.download_button(
-                              label="📥 Download Formatted PDF Report",
-                              data=pdf_bytes,
-                              file_name=f"DPDPA_Section_{result['Section']}.pdf",
-                              mime="application/pdf"
-                          )
-
