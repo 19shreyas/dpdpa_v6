@@ -615,7 +615,7 @@ elif menu == "Policy Compliance Checker":
                         
                         pdf.chapter_title("Checklist Items Matched:")
                         for item in result["Checklist Items Matched"]:
-                            pdf.chapter_body(f"- {item}"))
+                            pdf.chapter_body(f"- {item}")
                         
                         pdf.chapter_title("Matched Details:")
                         for item in result["Matched Details"]:
