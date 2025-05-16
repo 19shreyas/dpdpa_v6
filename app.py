@@ -4,6 +4,9 @@ import json
 import pandas as pd
 import re
 import fitz
+import io
+from fpdf import FPDF
+                        
 
 # --- OpenAI Setup ---
 api_key = st.secrets["OPENAI_API_KEY"]
@@ -562,3 +565,76 @@ elif menu == "Policy Compliance Checker":
                     
                         st.markdown("### 🧾 Simplified Legal Meaning:")
                         st.success(result["Simplified Legal Meaning"])
+
+                        # --- JSON Export ---
+                        json_str = json.dumps(result, indent=2)
+                        json_bytes = io.BytesIO(json_str.encode("utf-8"))
+                        st.download_button(
+                            label="📥 Download JSON Report",
+                            data=json_bytes,
+                            file_name=f"DPDPA_Section_{result['Section']}.json",
+                            mime="application/json"
+                        )
+                        
+                        # --- CSV Export ---
+                        csv_df = pd.DataFrame(result["Matched Details"])
+                        csv_bytes = io.BytesIO()
+                        csv_df.to_csv(csv_bytes, index=False)
+                        csv_bytes.seek(0)
+                        st.download_button(
+                            label="📥 Download Checklist Evaluation CSV",
+                            data=csv_bytes,
+                            file_name=f"DPDPA_Section_{result['Section']}.csv",
+                            mime="text/csv"
+                        )
+                        
+                        # --- PDF Export ---
+                        class PDF(FPDF):
+                            def header(self):
+                                self.set_font("Arial", "B", 12)
+                                self.cell(0, 10, f"DPDPA Compliance Report – Section {result['Section']}", ln=True, align="C")
+                        
+                            def chapter_title(self, title):
+                                self.set_font("Arial", "B", 11)
+                                self.cell(0, 8, title, ln=True, align="L")
+                        
+                            def chapter_body(self, text):
+                                self.set_font("Arial", "", 10)
+                                self.multi_cell(0, 8, text)
+                        
+                        pdf = PDF()
+                        pdf.add_page()
+                        
+                        pdf.chapter_title(f"Section: {result['Section']} — {result['Title']}")
+                        pdf.chapter_body(f"Compliance Score: {result['Compliance Score']}")
+                        pdf.chapter_body(f"Match Level: {result['Match Level']}")
+                        
+                        pdf.chapter_title("Checklist Items Matched:")
+                        for item in result["Checklist Items Matched"]:
+                            pdf.chapter_body(f"- {item}")
+                        
+                        pdf.chapter_title("Matched Details:")
+                        for item in result["Matched Details"]:
+                            status = item["Status"]
+                            item_id = item["Checklist Item ID"]
+                            justification = item["Justification"]
+                            text = item["Checklist Text"]
+                            pdf.chapter_body(f"{item_id} [{status}]\n{text}\n→ Justification: {justification}\n")
+                        
+                        pdf.chapter_title("Simplified Legal Meaning:")
+                        pdf.chapter_body(result.get("Simplified Legal Meaning", ""))
+                        
+                        pdf.chapter_title("GPT-Suggested Rewrite:")
+                        pdf.chapter_body(result.get("Suggested Rewrite", ""))
+                        
+                        pdf_bytes = io.BytesIO()
+                        pdf.output(pdf_bytes)
+                        pdf_bytes.seek(0)
+                        
+                        st.download_button(
+                            label="📥 Download Formatted PDF Report",
+                            data=pdf_bytes,
+                            file_name=f"DPDPA_Section_{result['Section']}.pdf",
+                            mime="application/pdf"
+                        )
+
