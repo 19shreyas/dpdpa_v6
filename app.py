@@ -128,36 +128,35 @@ def create_block_prompt(section_id, block_text, checklist):
     )
 
     return f"""
-You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
-
-**Checklist:** Use the item numbers (e.g., 4.1, 4.2...) from the checklist below in your response. Do not rephrase or modify the checklist items. Evaluate strictly based on the original items.
-
-{checklist_text}
-
-**Policy Block:**
-{block_text}
-
-Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
-
-Return output in this JSON format:
-{{
-  "Checklist Evaluation": [
+    You are a compliance analyst evaluating whether the following privacy policy block meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+    
+    **Checklist:** Use the item numbers (e.g., 4.1, 4.2...) from the checklist below in your response. Do not rephrase or modify the checklist items. Evaluate strictly based on the original items.
+    
+    {checklist_text}
+    
+    **Policy Block:**
+    {block_text}
+    
+    Evaluate each checklist item as: Explicitly Mentioned / Partially Mentioned / Missing.
+    
+    Return output in this JSON format:
     {{
-      "Checklist Item ID": "4.1",
-      "Status": "Explicitly Mentioned",
-      "Justification": "..."
-    }},
-    ...
-  ],
-  "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
-  "Compliance Score": 0.0,
-  "Suggested Rewrite": "...",
-  "Simplified Legal Meaning": "..."
-}}
-
-Only return the JSON object. Do not include any commentary or explanation.
-"""
-
+      "Checklist Evaluation": [
+        {{
+          "Checklist Item ID": "4.1",
+          "Status": "Explicitly Mentioned",
+          "Justification": "..."
+        }},
+        ...
+      ],
+      "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
+      "Compliance Score": 0.0,
+      "Suggested Rewrite": "...",
+      "Simplified Legal Meaning": "..."
+    }}
+    
+    Only return the JSON object. Do not include any commentary or explanation.
+    """
 
 # --- GPT Call ---
 def call_gpt(prompt, model="gpt-4"):
