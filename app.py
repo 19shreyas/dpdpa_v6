@@ -157,6 +157,45 @@ def create_block_prompt(section_id, block_text, checklist):
     
     Only return the JSON object. Do not include any commentary or explanation.
     """
+def create_full_policy_prompt(section_id, full_policy_text, checklist):
+    checklist_text = "\n".join(
+        f"{item['id']}. {item['text']}" for item in checklist
+    )
+
+    return f"""
+    You are a compliance analyst evaluating whether the following full privacy policy meets DPDPA Section {section_id}: {dpdpa_checklists[section_id]['title']}.
+    
+    **Checklist:** Use the item numbers (e.g., 4.1, 4.2...) from the checklist below in your response. Do not rephrase or modify the checklist items. Evaluate strictly based on the original items.
+    
+    {checklist_text}
+    
+    **Full Policy Text:**
+    {full_policy_text}
+    
+    Instructions:
+    For each checklist item, search anywhere in the policy and classify it as:
+    - Explicitly Mentioned
+    - Partially Mentioned
+    - Missing
+    
+    Return output in this JSON format only:
+    {{
+      "Checklist Evaluation": [
+        {{
+          "Checklist Item ID": "4.1",
+          "Status": "Explicitly Mentioned",
+          "Justification": "..."
+        }},
+        ...
+      ],
+      "Match Level": "Fully Compliant / Partially Compliant / Non-Compliant",
+      "Compliance Score": 0.0,
+      "Suggested Rewrite": "...",
+      "Simplified Legal Meaning": "..."
+    }}
+    
+    Only return the JSON object. Do not include any commentary or explanation.
+    """
 
 # --- GPT Call ---
 def call_gpt(prompt, model="gpt-4"):
