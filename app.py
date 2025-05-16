@@ -476,11 +476,11 @@ elif menu == "Policy Compliance Checker":
                             </div>
                             """, unsafe_allow_html=True)
                         
-                            st.markdown("### 📋 Checklist Items Matched:")
+                            st.markdown("#### 📋 Checklist Items Matched:")
                             for i, item in enumerate(result["Checklist Items Matched"]):
                                 st.markdown(f"- {item}")
                         
-                            st.markdown("### 🔍 Matched Details:")
+                            st.markdown("#### 🔍 Matched Details:")
                             for item in result["Matched Details"]:
                                 status = item.get("Status", "Missing")
                                 color = {
@@ -499,10 +499,10 @@ elif menu == "Policy Compliance Checker":
                             <br><small>📝 {justification}</small>
                             """, unsafe_allow_html=True)
                         
-                            st.markdown("### ✏️ Suggested Rewrite:")
+                            st.markdown("#### ✏️ Suggested Rewrite:")
                             st.info(result["Suggested Rewrite"])
                         
-                            st.markdown("### 🧾 Simplified Legal Meaning:")
+                            st.markdown("#### 🧾 Simplified Legal Meaning:")
                             st.success(result["Simplified Legal Meaning"])
 
                         st.markdown("---")
@@ -511,7 +511,14 @@ elif menu == "Policy Compliance Checker":
                     checklist = dpdpa_checklists[section_num]['items']
 
                     result = analyze_policy_section(section_num, checklist, policy_text)
-                    with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
+                    st.markdown(f"""
+                    <div style='font-size:20px; font-weight:700; margin-top:25px; margin-bottom:-10px;'>
+                    📘 Section {result['Section']} — {result['Title']}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    with st.expander("", expanded=True):
+
                         # Set color for Match Level badge
                         level_color = {
                             "Fully Compliant": "#198754",     # green
