@@ -220,59 +220,119 @@ def compute_score_and_level(evaluations, total_items):
     return round(score, 2), level
 
 # --- Analyzer ---
-def analyze_policy_section(section_id, checklist, policy_text):
-    blocks = break_into_blocks(policy_text)
-    all_results = []
+# def analyze_policy_section(section_id, checklist, policy_text):
+#     blocks = break_into_blocks(policy_text)
+#     all_results = []
 
-    id_to_text = {item["id"]: item["text"] for item in checklist}
-    checklist_summary = {
-        item["id"]: {"Status": "Missing", "Justification": ""} for item in checklist
-    }
+#     id_to_text = {item["id"]: item["text"] for item in checklist}
+#     checklist_summary = {
+#         item["id"]: {"Status": "Missing", "Justification": ""} for item in checklist
+#     }
 
-    # Run GPT on each block
-    for block in blocks:
-        prompt = create_block_prompt(section_id, block, checklist)
-        try:
-            result = call_gpt(prompt)
-            result["Block"] = block
-            all_results.append(result)
-        except:
-            continue
+#     # Run GPT on each block
+#     for block in blocks:
+#         prompt = create_block_prompt(section_id, block, checklist)
+#         try:
+#             result = call_gpt(prompt)
+#             result["Block"] = block
+#             all_results.append(result)
+#         except:
+#             continue
 
-    # Process results
-    for res in all_results:
-        for eval_item in res.get("Checklist Evaluation", []):
-            item_id = eval_item["Checklist Item ID"].strip()
-            status = eval_item["Status"].strip()
-            justification = eval_item["Justification"].strip()
+#     # Process results
+#     for res in all_results:
+#         for eval_item in res.get("Checklist Evaluation", []):
+#             item_id = eval_item["Checklist Item ID"].strip()
+#             status = eval_item["Status"].strip()
+#             justification = eval_item["Justification"].strip()
 
-            if item_id not in checklist_summary:
-                continue
+#             if item_id not in checklist_summary:
+#                 continue
 
-            current_status = checklist_summary[item_id]["Status"]
+#             current_status = checklist_summary[item_id]["Status"]
 
-            if status == "Explicitly Mentioned":
-                checklist_summary[item_id] = {"Status": status, "Justification": justification}
-            elif status == "Partially Mentioned" and current_status == "Missing":
-                checklist_summary[item_id] = {"Status": status, "Justification": justification}
+#             if status == "Explicitly Mentioned":
+#                 checklist_summary[item_id] = {"Status": status, "Justification": justification}
+#             elif status == "Partially Mentioned" and current_status == "Missing":
+#                 checklist_summary[item_id] = {"Status": status, "Justification": justification}
 
-    # Build final evaluation list
+#     # Build final evaluation list
+#     evaluations = []
+#     matched_count = 0
+#     partial_count = 0
+
+#     for item_id, data in checklist_summary.items():
+#         evaluations.append({
+#             "Checklist Item ID": item_id,
+#             "Checklist Text": id_to_text[item_id],
+#             "Status": data["Status"],
+#             "Justification": data["Justification"]
+#         })
+
+#         if data["Status"] == "Explicitly Mentioned":
+#             matched_count += 1
+#         elif data["Status"] == "Partially Mentioned":
+#             partial_count += 1
+
+#     score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
+#     level = (
+#         "Fully Compliant" if score == 1 else
+#         "Non-Compliant" if score == 0 else
+#         "Partially Compliant"
+#     )
+
+#     return {
+#         "Section": section_id,
+#         "Title": dpdpa_checklists[section_id]['title'],
+#         "Match Level": level,
+#         "Compliance Score": round(score, 2),
+#         "Matched Details": evaluations,
+#         "Checklist Items Matched": [f"{e['Checklist Item ID']} — {e['Checklist Text']}" for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
+#         "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
+#         "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
+#     }
+
+def analyze_policy_section(section_id, checklist, policy_text, model="gpt-4"):
+    prompt = create_full_policy_prompt(section_id, policy_text, checklist)
+    
+    try:
+        result = call_gpt(prompt, model=model)
+    except Exception as e:
+        return {
+            "Section": section_id,
+            "Title": dpdpa_checklists[section_id]['title'],
+            "Error": str(e),
+            "Match Level": "Error",
+            "Compliance Score": 0.0,
+            "Matched Details": [],
+            "Checklist Items Matched": [],
+            "Suggested Rewrite": "",
+            "Simplified Legal Meaning": ""
+        }
+
+    checklist_dict = {item["id"]: item["text"] for item in checklist}
     evaluations = []
+
     matched_count = 0
     partial_count = 0
 
-    for item_id, data in checklist_summary.items():
+    for item in result.get("Checklist Evaluation", []):
+        item_id = item.get("Checklist Item ID", "").strip()
+        status = item.get("Status", "Missing").strip()
+        justification = item.get("Justification", "").strip()
+        text = checklist_dict.get(item_id, "❓")
+
+        if status == "Explicitly Mentioned":
+            matched_count += 1
+        elif status == "Partially Mentioned":
+            partial_count += 1
+
         evaluations.append({
             "Checklist Item ID": item_id,
-            "Checklist Text": id_to_text[item_id],
-            "Status": data["Status"],
-            "Justification": data["Justification"]
+            "Checklist Text": text,
+            "Status": status,
+            "Justification": justification
         })
-
-        if data["Status"] == "Explicitly Mentioned":
-            matched_count += 1
-        elif data["Status"] == "Partially Mentioned":
-            partial_count += 1
 
     score = (matched_count + 0.5 * partial_count) / len(checklist) if checklist else 0
     level = (
@@ -284,13 +344,14 @@ def analyze_policy_section(section_id, checklist, policy_text):
     return {
         "Section": section_id,
         "Title": dpdpa_checklists[section_id]['title'],
-        "Match Level": level,
+        "Match Level": result.get("Match Level", level),
         "Compliance Score": round(score, 2),
         "Matched Details": evaluations,
         "Checklist Items Matched": [f"{e['Checklist Item ID']} — {e['Checklist Text']}" for e in evaluations if e["Status"] in ["Explicitly Mentioned", "Partially Mentioned"]],
-        "Suggested Rewrite": all_results[0].get("Suggested Rewrite", "") if all_results else "",
-        "Simplified Legal Meaning": all_results[0].get("Simplified Legal Meaning", "") if all_results else ""
+        "Suggested Rewrite": result.get("Suggested Rewrite", ""),
+        "Simplified Legal Meaning": result.get("Simplified Legal Meaning", "")
     }
+
 
 def set_custom_css():
     st.markdown("""
