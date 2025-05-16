@@ -450,19 +450,23 @@ elif menu == "Policy Compliance Checker":
             result = []
             with st.spinner("Running GPT-based compliance evaluation..."):
                 if section_id == "All Sections":
+                    all_results = []  # 🔁 collect each section's result
+
                     for sid in dpdpa_checklists:
-                        st.markdown(f"### Section {sid} — {dpdpa_checklists[sid]['title']}")
-                        result = analyze_policy_section(sid, dpdpa_checklists[sid]['items'], policy_text)
+                        st.markdown(f"## ✅ Processing Section {sid} — {dpdpa_checklists[sid]['title']}")
+                        checklist = dpdpa_checklists[sid]["items"]
+                        result = analyze_policy_section(sid, checklist, policy_text)
+                        all_results.append(result)
+            
                         with st.expander(f"Section {result['Section']} — {result['Title']}", expanded=True):
-                            # Set color for Match Level badge
                             level_color = {
-                                "Fully Compliant": "#198754",     # green
-                                "Partially Compliant": "#FFC107", # yellow
-                                "Non-Compliant": "#DC3545"        # red
+                                "Fully Compliant": "#198754",
+                                "Partially Compliant": "#FFC107",
+                                "Non-Compliant": "#DC3545"
                             }
                             match_level = result["Match Level"]
-                            color = level_color.get(match_level, "#6C757D")  # fallback grey
-                            
+                            color = level_color.get(match_level, "#6C757D")
+            
                             st.markdown(f"""
                             <div style="margin-bottom: 1rem;">
                               <b>Compliance Score:</b>
@@ -475,37 +479,70 @@ elif menu == "Policy Compliance Checker":
                               </span>
                             </div>
                             """, unsafe_allow_html=True)
-                        
-                            st.markdown("#### 📋 Checklist Items Matched:")
-                            for i, item in enumerate(result["Checklist Items Matched"]):
+            
+                            st.markdown("### 📋 Checklist Items Matched:")
+                            for item in result["Checklist Items Matched"]:
                                 st.markdown(f"- {item}")
-                        
-                            st.markdown("#### 🔍 Matched Details:")
+            
+                            st.markdown("### 🔍 Matched Details:")
                             for item in result["Matched Details"]:
                                 status = item.get("Status", "Missing")
-                                color = {
+                                badge_color = {
                                     "Explicitly Mentioned": "#198754",
                                     "Partially Mentioned": "#FFC107",
                                     "Missing": "#DC3545"
                                 }.get(status, "#6c757d")
-                            
-                                item_id = item.get("Checklist Item ID", "❓")
-                                item_text = item.get("Checklist Text", "❓")
-                                justification = item.get("Justification", "No justification found.")
-                            
+            
                                 st.markdown(f"""
-                            **{item_id} — {item_text}**  
-                            <span style="color:white;background-color:{color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
-                            <br><small>📝 {justification}</small>
-                            """, unsafe_allow_html=True)
-                        
-                            st.markdown("#### ✏️ Suggested Rewrite:")
+                                **{item['Checklist Item ID']} — {item['Checklist Text']}**  
+                                <span style="color:white;background-color:{badge_color};padding:3px 10px;border-radius:6px;font-size:13px;">{status}</span>  
+                                <br><small>📝 {item.get("Justification", "No justification")}</small>
+                                """, unsafe_allow_html=True)
+            
+                            st.markdown("### ✏️ Suggested Rewrite:")
                             st.info(result["Suggested Rewrite"])
-                        
-                            st.markdown("#### 🧾 Simplified Legal Meaning:")
+            
+                            st.markdown("### 🧾 Simplified Legal Meaning:")
                             st.success(result["Simplified Legal Meaning"])
-
-                        st.markdown("---")
+            
+                    # ✅ Combined Export Section
+                    st.markdown("## 📥 Export Combined Results")
+            
+                    # --- JSON Export ---
+                    combined_json = json.dumps(all_results, indent=2)
+                    combined_json_bytes = io.BytesIO(combined_json.encode("utf-8"))
+                    st.download_button(
+                        label="📥 Download Combined JSON",
+                        data=combined_json_bytes,
+                        file_name="DPDPA_All_Sections_Combined.json",
+                        mime="application/json"
+                    )
+            
+                    # --- CSV Export ---
+                    combined_rows = []
+                    for result in all_results:
+                        for item in result["Matched Details"]:
+                            combined_rows.append({
+                                "Section": result["Section"],
+                                "Checklist Item ID": item["Checklist Item ID"],
+                                "Checklist Text": item["Checklist Text"],
+                                "Status": item["Status"],
+                                "Justification": item["Justification"],
+                                "Match Level": result["Match Level"],
+                                "Score": result["Compliance Score"]
+                            })
+            
+                    combined_csv = pd.DataFrame(combined_rows)
+                    combined_csv_bytes = io.BytesIO()
+                    combined_csv.to_csv(combined_csv_bytes, index=False)
+                    combined_csv_bytes.seek(0)
+            
+                    st.download_button(
+                        label="📥 Download Combined CSV",
+                        data=combined_csv_bytes,
+                        file_name="DPDPA_All_Sections_Evaluation.csv",
+                        mime="text/csv"
+                    )
                 else:
                     section_num = section_id.split(" — ")[0] if " — " in section_id else section_id
                     checklist = dpdpa_checklists[section_num]['items']
