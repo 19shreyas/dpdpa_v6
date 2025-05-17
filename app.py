@@ -390,79 +390,62 @@ elif menu == "Policy Generator":
     
         # --- Group 1: Organization Details ---
         with st.expander("🏢 Organization Details", expanded=True):
-            st.markdown("**Policy Type***")
-            st.caption("Select the kind of policy you are generating.")
-            policy_type = st.selectbox("", [
+            st.markdown("**Policy Type***  \n_Select the kind of policy you are generating._")
+            policy_type = st.selectbox(" ", [
                 "-- Select Policy Type --", "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy"
-            ])
+            ], key="policy_type")
         
-            st.markdown("**Organization Name***")
-            st.caption("Enter the full legal name of your organization.")
-            org_name = st.text_input("")
+            st.markdown("**Organization Name***  \n_Enter the full legal name of your organization._")
+            org_name = st.text_input(" ", key="org_name")
         
-            st.markdown("**Sector***")
-            st.caption("Select your sector or enter a custom one below.")
-            sector_dropdown = st.selectbox("", [
+            st.markdown("**Sector***  \n_Select your sector or enter a custom one below._")
+            sector_dropdown = st.selectbox(" ", [
                 "-- Select Sector --", "Healthcare", "Finance", "Education", "Retail", "Government", "Technology", "Telecom"
-            ])
-            sector_custom = st.text_input("Custom sector (if not listed)")
+            ], key="sector_dropdown")
+            sector_custom = st.text_input("Custom sector (if not listed)", key="sector_custom")
 
-    
         # --- Group 2: Data Collection & Target Audience ---
         with st.expander("📊 Data Collection Details", expanded=True):
-            st.markdown("**Select Data Types Collected***")
-            st.caption("Select categories of personal data you collect. Required under DPDPA Sections 6 & 7.")
-            data_types_common = st.multiselect("", [
+            st.markdown("**Select Data Types Collected***  \n_Choose the categories of personal data you collect. Required under Sections 6 & 7._")
+            data_types_common = st.multiselect(" ", [
                 "Name", "Email", "Phone Number", "Biometric", "Health Records", "Location Data",
                 "Financial Information", "Browsing Data"
-            ])
+            ], key="data_types_common")
         
             st.markdown("Custom data types (comma separated)")
-            data_types_custom = st.text_input("", key="custom_data_types")
+            data_types_custom = st.text_input(" ", key="data_types_custom")
         
-            st.markdown("**Is this policy applicable to children under 18?**")
-            st.caption("If your services are used by minors, DPDPA Section 9 applies.")
-            children_data = st.radio("", ["No", "Yes"], horizontal=True)
+            st.markdown("**Is this policy applicable to children under 18?**  \n_If your services are used by minors, Section 9 applies._")
+            children_data = st.radio(" ", ["No", "Yes"], horizontal=True, key="children_data")
 
-    
         # --- Group 3: Legal Basis & Consent ---
         with st.expander("⚖️ Legal Basis for Processing", expanded=True):
-            st.markdown("**Lawful Purpose for Data Collection***")
-            st.caption("Why are you collecting personal data? e.g., Delivering services, fraud prevention.")
-            lawful_purpose = st.text_input("", key="lawful_purpose")
-
+            st.markdown("**Lawful Purpose for Data Collection***  \n_Why are you collecting personal data? e.g., Delivering services, fraud prevention._")
+            lawful_purpose = st.text_input(" ", key="lawful_purpose")
         
-            st.markdown("**Type of Consent Taken***")
-            st.caption("How you collect consent: Explicit (opt-in), Deemed (by use), or Notice-only.")
-            consent_type = st.selectbox("", [
+            st.markdown("**Type of Consent Taken***  \n_How do you obtain consent? Explicit (opt-in), Deemed (via use), or just Notice._")
+            consent_type = st.selectbox(" ", [
                 "Explicit Consent", "Deemed Consent", "Notice Only (limited use cases)"
-            ])
+            ], key="consent_type")
         
-            st.markdown("**Special Purpose under Section 7 (Optional)**")
-            st.caption("If you process data without consent for employment, emergency, or public interest, select here.")
-            legitimate_use = st.multiselect("", [
+            st.markdown("**Special Purpose under Section 7 (Optional)**  \n_If you process data without consent for employment, emergency, or public interest, select here._")
+            legitimate_use = st.multiselect(" ", [
                 "Employment Purposes", "Medical Emergency", "Government Function", "Disaster Response", "Public Interest", "None of the Above"
-            ])
+            ], key="legitimate_use")
 
-    
         # --- Group 4: Retention, Security, and Sharing ---
         with st.expander("📁 Retention & Data Sharing", expanded=False):
-            st.markdown("**Data Retention Duration***")
-            st.caption("How long you store personal data. Must be justified under Section 8(7).")
-            retention_period = st.text_input("", key="retention_period")
+            st.markdown("**Data Retention Duration***  \n_How long do you retain data? Must be justified under Section 8(7)._")
+            retention_period = st.text_input(" ", key="retention_period")
         
-            st.markdown("**Is Data Shared Internationally?***")
-            st.caption("Required under Section 16. Mention if data is processed outside India.")
-            cross_border = st.radio("", ["Yes", "No"], horizontal=True)
-
+            st.markdown("**Is Data Shared Internationally?***  \n_Required under Section 16. Mention if data is processed outside India._")
+            cross_border = st.radio(" ", ["Yes", "No"], horizontal=True, key="cross_border")
     
         # --- Group 5: Grievance Contact Info ---
         with st.expander("📨 Grievance Redressal Contact", expanded=False):
-            st.markdown("**Grievance Officer Contact Email***")
-            st.caption("As per Section 10, provide a contact for complaints or data requests.")
-            grievance_email = st.text_input("", key="grievance_email")
+            st.markdown("**Grievance Officer Contact Email***  \n_As per Section 10, provide a contact for complaints or data requests._")
+            grievance_email = st.text_input(" ", key="grievance_email")
 
-    
         # --- Generate Button ---
         if st.button("🚀 Generate DPDPA-Compliant Policy with GPT"):
             errors = []
