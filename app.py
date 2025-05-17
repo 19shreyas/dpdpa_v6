@@ -392,24 +392,38 @@ elif menu == "Policy Generator":
             policy_type = st.selectbox("Policy Type", [
                 "-- Select Policy Type --", "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy"
             ])
-            org_name = st.text_input("Organization Name (e.g., Acme Corp)")
-            sector = st.text_input("Sector (e.g., Healthcare, Finance)")
-            data_types = st.text_input("Data Types Handled (e.g., Email, Biometric, Financial data)")
+    
+            org_name = st.text_input("Enter Organization Name")
+    
+            # Sector: Dropdown + Optional Custom
+            sector_dropdown = st.selectbox("Select Sector", [
+                "-- Select Sector --", "Healthcare", "Finance", "Education", "Retail", "Government", "Technology", "Telecom"
+            ])
+            sector_custom = st.text_input("Or enter custom sector (optional)")
+    
+            # Data Types: Multiselect + Optional Custom
+            data_types_common = st.multiselect("Select Data Types Handled", [
+                "Name", "Email", "Phone Number", "Biometric", "Health Records", "Location Data", "Financial Information", "Browsing Data"
+            ])
+            data_types_custom = st.text_input("Or enter custom data types (comma separated)")
     
         generate_clicked = st.button("🚀 Generate Policy with GPT")
     
         if generate_clicked:
-            if policy_type == "-- Select Policy Type --":
-                st.warning("Please select a valid policy type before generating.")
+            if policy_type == "-- Select Policy Type --" or (sector_dropdown == "-- Select Sector --" and not sector_custom):
+                st.warning("Please select a valid policy type and provide a sector.")
             else:
+                sector_final = sector_custom if sector_custom else sector_dropdown
+                data_types_final = data_types_common + [dt.strip() for dt in data_types_custom.split(",") if dt.strip()]
+    
                 with st.spinner("Generating policy... please wait."):
                     prompt = f"""
     You are a policy drafting assistant. Create a comprehensive {policy_type.lower()}.
     
     Include:
     - Organization Name: {org_name or 'Not specified'}
-    - Sector: {sector or 'Not specified'}
-    - Data Types Handled: {data_types or 'Not specified'}
+    - Sector: {sector_final}
+    - Data Types Handled: {", ".join(data_types_final) if data_types_final else "Not specified"}
     
     Include standard sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, Security Measures, and Contact Info. 
     Use professional, plain English. Output only the draft text.
@@ -421,7 +435,6 @@ elif menu == "Policy Generator":
                     except Exception as e:
                         st.error(f"❌ GPT Error: {e}")
     
-        # Display editable output only if generated
         if "full_policy_draft" in st.session_state:
             st.markdown("---")
             st.markdown("### ✏️ Edit Your Policy")
