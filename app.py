@@ -390,53 +390,52 @@ elif menu == "Policy Generator":
     
         with st.expander("🛠️ Input Settings", expanded=True):
             policy_type = st.selectbox("Policy Type", [
-                "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy", "Other"
+                "-- Select Policy Type --", "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy"
             ])
-            org_name = st.text_input("Organization Name", placeholder="e.g., Acme Corp")
-            sector = st.text_input("Sector", placeholder="e.g., Healthcare, Finance")
-            data_types = st.text_input("Data Types Handled", placeholder="e.g., Email, Biometric, Financial data")
+            org_name = st.text_input("Organization Name (e.g., Acme Corp)")
+            sector = st.text_input("Sector (e.g., Healthcare, Finance)")
+            data_types = st.text_input("Data Types Handled (e.g., Email, Biometric, Financial data)")
     
         generate_clicked = st.button("🚀 Generate Policy with GPT")
     
         if generate_clicked:
-            with st.spinner("Generating policy... please wait."):
-                prompt = f"""
+            if policy_type == "-- Select Policy Type --":
+                st.warning("Please select a valid policy type before generating.")
+            else:
+                with st.spinner("Generating policy... please wait."):
+                    prompt = f"""
     You are a policy drafting assistant. Create a comprehensive {policy_type.lower()}.
     
-    Include the following details:
-    - Organization Name: {org_name if org_name else 'Not specified'}
-    - Sector: {sector if sector else 'Not specified'}
-    - Data Types Handled: {data_types if data_types else 'Not specified'}
+    Include:
+    - Organization Name: {org_name or 'Not specified'}
+    - Sector: {sector or 'Not specified'}
+    - Data Types Handled: {data_types or 'Not specified'}
     
-    The policy should include common sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, Security Measures, and Contact Information.
+    Include standard sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, Security Measures, and Contact Info. 
+    Use professional, plain English. Output only the draft text.
+                    """
+                    try:
+                        draft = call_gpt_text(prompt)
+                        st.session_state["full_policy_draft"] = draft
+                        st.success("✅ Draft generated successfully!")
+                    except Exception as e:
+                        st.error(f"❌ GPT Error: {e}")
     
-    Return the policy in plain professional English without headings like 'GPT Response'. Only return the draft text.
-                """.strip()
-    
-                try:
-                    draft = call_gpt_text(prompt)
-                    st.session_state["full_policy_draft"] = draft
-                    st.success("✅ Draft generated successfully!")
-                except Exception as e:
-                    st.error(f"❌ GPT Error: {e}")
-    
+        # Display editable output only if generated
         if "full_policy_draft" in st.session_state:
+            st.markdown("---")
             st.markdown("### ✏️ Edit Your Policy")
-            edited = st.text_area("You can modify the generated policy here before saving/exporting:",
-                                  value=st.session_state["full_policy_draft"],
-                                  height=400, key="full_policy_editor")
+            edited = st.text_area("Modify the policy text below:", value=st.session_state["full_policy_draft"], height=400, key="full_policy_editor")
     
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("💾 Save Draft"):
                     st.session_state["saved_full_policy"] = edited
-                    st.success("Draft saved in memory (session).")
+                    st.success("Draft saved in memory (session only).")
     
             with col2:
                 if st.button("⬇️ Export to Word/PDF"):
-                    st.info("Export functionality will be added in next release.")
-
-
+                    st.info("Export functionality will be available soon.")
 
     with tab2:
         st.subheader("Section-wise Generator")
