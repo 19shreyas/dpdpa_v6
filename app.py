@@ -888,8 +888,93 @@ elif menu == "Policy Generator":
 
 
     with tab5:
-        st.subheader("Saved Drafts")
-        st.dataframe({"Draft": ["HR Policy", "Marketing Policy"], "Last Modified": ["2025-05-10", "2025-05-01"]})
+        st.markdown("### 🗂️ View & Manage Saved Drafts")
+        st.caption("This page lets you view, edit, rename, export, or delete any draft stored in your session or uploaded from a file.")
+    
+        # --- Session State: Collect all saved drafts ---
+        saved_drafts = {}
+        for key in st.session_state:
+            if key.startswith("saved_"):
+                label = key.replace("saved_", "").replace("_", " ").title()
+                saved_drafts[label] = st.session_state[key]
+    
+        # --- Upload JSON Draft ---
+        st.markdown("#### 📤 Upload a JSON Draft (from export)")
+        uploaded = st.file_uploader("Upload JSON file", type="json")
+        if uploaded:
+            try:
+                loaded = json.load(uploaded)
+                label = f"Uploaded: {uploaded.name}"
+                saved_drafts[label] = loaded["content"]
+                st.success(f"✅ Loaded draft: {label}")
+            except Exception as e:
+                st.error(f"❌ Error loading draft: {e}")
+    
+        if not saved_drafts:
+            st.info("No drafts found in this session. Try generating and saving one in Tabs 1–4.")
+        else:
+            draft_names = list(saved_drafts.keys())
+            selected = st.selectbox("📋 Select a draft to view/edit", draft_names)
+            current_draft = saved_drafts[selected]
+    
+            st.markdown(f"#### ✏️ Editing Draft: `{selected}`")
+            edited_draft = st.text_area("You can update the draft content below:", value=current_draft, height=300, key="edit_draft")
+    
+            col1, col2, col3, col4 = st.columns(4)
+    
+            # --- Rename ---
+            with col1:
+                new_name = st.text_input("Rename this draft as", value=selected, key="rename_field")
+                if st.button("🔁 Rename Draft"):
+                    st.session_state[f"saved_{new_name.replace(' ', '_').lower()}"] = edited_draft
+                    if f"saved_{selected.replace(' ', '_').lower()}" in st.session_state:
+                        del st.session_state[f"saved_{selected.replace(' ', '_').lower()}"]
+                    st.success("✅ Draft renamed successfully. Refresh the dropdown to see updated name.")
+    
+            # --- Export .docx ---
+            with col2:
+                if st.button("⬇️ Export as Word (.docx)", key="export_word_saved"):
+                    doc = Document()
+                    doc.add_heading(f"{selected} Draft", level=1)
+                    for para in edited_draft.split("\n"):
+                        doc.add_paragraph(para)
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+                    st.download_button(
+                        label="📄 Download Word File",
+                        data=buffer,
+                        file_name=f"{selected.replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+    
+            # --- Export .txt ---
+            with col3:
+                if st.button("⬇️ Export as TXT", key="export_txt_saved"):
+                    st.download_button(
+                        label="📄 Download TXT File",
+                        data=edited_draft,
+                        file_name=f"{selected.replace(' ', '_')}.txt",
+                        mime="text/plain"
+                    )
+    
+            # --- Export .json ---
+            with col4:
+                if st.button("💾 Download JSON", key="export_json_saved"):
+                    st.download_button(
+                        label="📁 Download JSON File",
+                        data=json.dumps({"name": selected, "content": edited_draft}, indent=2),
+                        file_name=f"{selected.replace(' ', '_')}.json",
+                        mime="application/json"
+                    )
+    
+            # --- Delete from session ---
+            if st.button("🗑️ Delete Draft", key="delete_draft_btn"):
+                del_key = f"saved_{selected.replace(' ', '_').lower()}"
+                if del_key in st.session_state:
+                    del st.session_state[del_key]
+                    st.success(f"Draft `{selected}` deleted. Refresh to confirm.")
+
 
 # --- Policy Compliance Checker ---
 elif menu == "Policy Compliance Checker":
