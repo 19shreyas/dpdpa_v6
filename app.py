@@ -790,9 +790,102 @@ elif menu == "Policy Generator":
 
 
     with tab4:
-        st.subheader("GPT-Assisted Draft Builder")
-        prompt = st.text_input("Describe your need (e.g. privacy for HR data):")
-        st.button("Generate Draft")
+        st.markdown("### 🪄 GPT-Assisted Draft Builder")
+        st.caption("Describe any policy section or clause you'd like GPT to help you draft. This is not limited to DPDPA or lifecycle templates.")
+    
+        # --- Prompt Textbox ---
+        st.markdown("**Describe what you need help drafting***")
+        st.caption("Example: 'Draft a biometric attendance policy for factory workers' or 'Create a privacy notice for children under 13.'")
+        free_prompt = st.text_area("", height=120, key="gpt_draft_prompt")
+    
+        # --- Optional Tags ---
+        st.markdown("**Optional Tags**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            sector_tag = st.text_input("Sector", help="e.g., Healthcare, Fintech")
+        with col2:
+            scope_tag = st.text_input("Scope", help="e.g., HR Policy, Vendor Access")
+        with col3:
+            category_tag = st.text_input("Data Category", help="e.g., Biometric, Financial")
+    
+        # --- Generate Button ---
+        if st.button("✨ Generate with GPT", key="gpt_draft_btn"):
+            if not free_prompt.strip():
+                st.warning("Please enter a prompt.")
+            else:
+                with st.spinner("Generating your draft..."):
+                    prompt_draft_text = f"""
+    You are a policy assistant helping a user draft a professional snippet of policy language.
+    
+    Instruction: {free_prompt.strip()}
+    
+    {f"Sector: {sector_tag}" if sector_tag else ''}
+    {f"Scope: {scope_tag}" if scope_tag else ''}
+    {f"Data Category: {category_tag}" if category_tag else ''}
+    
+    Write in clear, professional policy language. Avoid filler text, disclaimers, or general advice. Return only the content of the policy.
+                    """
+                    try:
+                        gpt_draft_output = call_gpt_text(prompt_draft_text)
+                        st.session_state["gpt_draft_output"] = gpt_draft_output
+                        st.success("✅ Draft generated!")
+                    except Exception as e:
+                        st.error(f"❌ GPT Error: {e}")
+    
+        # --- Editable Output Area ---
+        if "gpt_draft_output" in st.session_state:
+            st.markdown("---")
+            st.markdown("### ✏️ Edit Your Draft")
+            edited_gpt_draft = st.text_area("Make final changes below:", value=st.session_state["gpt_draft_output"], height=300, key="gpt_draft_editor")
+    
+            col1, col2, col3, col4 = st.columns(4)
+    
+            with col1:
+                if st.button("💾 Save (Session Only)", key="save_gpt_draft"):
+                    st.session_state["saved_gpt_draft"] = edited_gpt_draft
+                    st.success("Saved in session.")
+    
+            with col2:
+                if st.button("⬇️ Export as Word", key="export_gpt_draft_docx"):
+                    doc = Document()
+                    doc.add_heading("Custom Policy Draft", level=1)
+                    for para in edited_gpt_draft.split("\n"):
+                        doc.add_paragraph(para)
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+                    st.download_button(
+                        label="📄 Download Word File",
+                        data=buffer,
+                        file_name=f"Custom_Policy_Draft.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+    
+            with col3:
+                if st.button("⬇️ Export as TXT", key="export_gpt_draft_txt"):
+                    st.download_button(
+                        label="📄 Download TXT File",
+                        data=edited_gpt_draft,
+                        file_name=f"Custom_Policy_Draft.txt",
+                        mime="text/plain"
+                    )
+    
+            with col4:
+                if st.button("💾 Save as JSON", key="export_gpt_draft_json"):
+                    gpt_draft_data = {
+                        "prompt": free_prompt,
+                        "sector": sector_tag,
+                        "scope": scope_tag,
+                        "category": category_tag,
+                        "content": edited_gpt_draft
+                    }
+                    st.download_button(
+                        label="📁 Download JSON Draft",
+                        data=json.dumps(gpt_draft_data, indent=2),
+                        file_name="Custom_Policy_Draft.json",
+                        mime="application/json"
+                    )
+
 
     with tab5:
         st.subheader("Saved Drafts")
