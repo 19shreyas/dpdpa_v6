@@ -574,10 +574,115 @@ elif menu == "Policy Generator":
                     )
 
     with tab2:
-        st.subheader("Section-wise Generator")
-        section = st.selectbox("Choose Section", ["Notice", "Consent", "Data Principal Rights", "Security"])
-        st.text_area(f"Draft for {section}:", height=200)
-        st.button("Suggest Completion")
+        with tab2:
+    st.markdown("### 🧩 Generate a Specific Section of Your Policy")
+    st.caption("Use this tool to draft a single section aligned with a DPDPA requirement.")
+
+    # --- Section Selection ---
+    section_map = {
+        "Section 4 — Grounds for Processing Personal Data": "4",
+        "Section 5 — Notice to Data Principal": "5",
+        "Section 6 — Consent & Withdrawal": "6",
+        "Section 7 — Legitimate Use Cases": "7",
+        "Section 8 — Accuracy, Retention & Security": "8",
+        "Section 9 — Processing Children's Data": "9",
+        "Section 10 — Grievance Redressal": "10"
+    }
+
+    st.markdown("**Select DPDPA Section***")
+    section_label = st.selectbox("", list(section_map.keys()))
+    section_id = section_map[section_label]
+
+    # --- Prompt Box ---
+    st.markdown("**What part of this section would you like to draft?***")
+    st.caption("Example: 'Explain how users can withdraw consent' or 'Write a grievance escalation flow.'")
+    custom_instruction = st.text_area("", height=100, key="section_prompt")
+
+    # --- Optional Context ---
+    st.markdown("**Add Organizational Context (optional)**")
+    st.caption("Mention platform name, sector, or audience if needed (e.g., fintech app, KYC users).")
+    org_context = st.text_input("", key="section_context")
+
+    # --- Generate Button ---
+    if st.button("🚀 Generate Section"):
+        if not custom_instruction.strip():
+            st.warning("Please describe what you want GPT to generate.")
+        else:
+            with st.spinner("Generating policy section..."):
+                section_prompt = f"""
+You are a legal assistant drafting a policy section aligned with India's Digital Personal Data Protection Act (DPDPA), 2023.
+
+Draft a clear, compliant, and standalone section for:
+
+**DPDPA Section {section_id} – {section_label.split('—')[-1].strip()}**
+
+Instruction from user: "{custom_instruction.strip()}"
+
+{f'Context: {org_context.strip()}' if org_context.strip() else ''}
+
+Write in plain legal English. Make it usable as-is inside a larger privacy policy.
+Return only the section text. Do not include headings or disclaimers.
+                """
+                try:
+                    section_output = call_gpt_text(section_prompt)
+                    st.session_state["section_output"] = section_output
+                    st.success("✅ Section draft generated successfully!")
+                except Exception as e:
+                    st.error(f"❌ GPT Error: {e}")
+
+    # --- Output Editor ---
+    if "section_output" in st.session_state:
+        st.markdown("---")
+        st.markdown("### ✏️ Edit Your Section")
+        edited_section = st.text_area("You can make final changes below:", value=st.session_state["section_output"], height=300, key="section_editor")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            if st.button("💾 Save (Session Only)", key="save_section"):
+                st.session_state["saved_section"] = edited_section
+                st.success("Section saved temporarily in session.")
+
+        with col2:
+            if st.button("⬇️ Export as Word", key="export_section_docx"):
+                doc = Document()
+                doc.add_heading(section_label, level=1)
+                for para in edited_section.split("\n"):
+                    doc.add_paragraph(para)
+                buffer = io.BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
+                st.download_button(
+                    label="📄 Download Word File",
+                    data=buffer,
+                    file_name=f"DPDPA_Section_{section_id}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+
+        with col3:
+            if st.button("⬇️ Export as TXT", key="export_section_txt"):
+                st.download_button(
+                    label="📄 Download TXT File",
+                    data=edited_section,
+                    file_name=f"DPDPA_Section_{section_id}.txt",
+                    mime="text/plain"
+                )
+
+        with col4:
+            if st.button("💾 Save to File (JSON)", key="export_section_json"):
+                section_data = {
+                    "section": section_id,
+                    "title": section_label,
+                    "content": edited_section,
+                    "user_instruction": custom_instruction,
+                    "org_context": org_context
+                }
+                st.download_button(
+                    label="📁 Download JSON Draft",
+                    data=json.dumps(section_data, indent=2),
+                    file_name=f"DPDPA_Section_{section_id}_Draft.json",
+                    mime="application/json"
+                )
 
     with tab3:
         st.subheader("Lifecycle-wise Template")
