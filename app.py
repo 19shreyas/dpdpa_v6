@@ -151,6 +151,14 @@ def call_gpt(prompt, model="gpt-4"):
         temperature=0
     )
     return json.loads(response.choices[0].message.content)
+    
+def call_gpt_text(prompt, model="gpt-4"):
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.5
+    )
+    return response.choices[0].message.content.strip()
 
 def analyze_policy_section(section_id, checklist, policy_text, model="gpt-4"):
     prompt = create_full_policy_prompt(section_id, policy_text, checklist)
@@ -377,9 +385,54 @@ elif menu == "Policy Generator":
         "GPT Draft Assistant", "Saved Drafts"])
 
     with tab1:
-        st.subheader("Full Policy Generator")
-        st.text_area("Enter your complete policy draft:", height=300)
-        st.button("Generate Suggestions with GPT")
+        st.subheader("🧾 Full Policy Generator")
+    
+        # --- Input Fields ---
+        policy_type = st.selectbox("Select Policy Type", [
+            "Privacy Policy", "Retention Policy", "Data Protection Policy", "Security Policy", "Other"
+        ])
+        org_name = st.text_input("Organization Name (optional)")
+        sector = st.text_input("Sector (optional)")
+        data_types = st.text_input("Data Types Handled (optional)")
+    
+        # --- Generate Button ---
+        if st.button("🚀 Generate Full Policy with GPT"):
+            with st.spinner("Generating your policy draft..."):
+                prompt = f"""
+    You are a privacy policy expert. Draft a comprehensive {policy_type.lower()} for an organization.
+    
+    Organization Name: {org_name if org_name else 'Not specified'}
+    Sector: {sector if sector else 'Not specified'}
+    Data Types Handled: {data_types if data_types else 'Not specified'}
+    
+    Include standard sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, and Contact.
+    Write in clear, professional language.
+    Return the policy as plain text.
+                """.strip()
+    
+                try:
+                    draft = call_gpt_text(prompt)
+                    st.session_state["full_policy_draft"] = draft
+                except Exception as e:
+                    st.error(f"GPT Error: {e}")
+    
+        # --- Show Output if Available ---
+        if "full_policy_draft" in st.session_state:
+            st.markdown("### ✏️ Generated Policy (Editable)")
+            edited_draft = st.text_area("Edit Your Policy Below:", value=st.session_state["full_policy_draft"], height=400, key="full_policy_editor")
+    
+            col1, col2 = st.columns(2)
+    
+            with col1:
+                if st.button("💾 Save Draft"):
+                    # Placeholder for actual save logic
+                    st.success("Draft saved successfully!")
+    
+            with col2:
+                if st.button("⬇️ Export to Word/PDF"):
+                    # Placeholder for export
+                    st.info("Export functionality is coming soon.")
+
 
     with tab2:
         st.subheader("Section-wise Generator")
