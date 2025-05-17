@@ -698,17 +698,17 @@ elif menu == "Policy Generator":
             "Data Sharing": "Outline what data is shared, with whom (internal or third party), and under what agreements."
         }
     
-        st.markdown("**Select Lifecycle Stage***")
+        st.markdown("#### Select Lifecycle Stage")
         lifecycle_stage = st.selectbox("", list(lifecycle_options.keys()))
     
         # --- Suggested Template ---
-        st.markdown("**Template Prompt Suggestion**")
+        st.markdown("#### Template Prompt Suggestion")
         st.caption("Modify or use the suggested wording below.")
         default_instruction = lifecycle_options[lifecycle_stage]
         lifecycle_prompt = st.text_area("", value=default_instruction, height=100, key="lifecycle_prompt")
     
         # --- Optional Context ---
-        st.markdown("**Add Organizational Context (optional)**")
+        st.markdown("#### Add Organizational Context (optional)")
         st.caption("Include platform name, sector, audience, or known risks (e.g., fintech app handling financial data).")
         lifecycle_context = st.text_input("", key="lifecycle_context")
     
