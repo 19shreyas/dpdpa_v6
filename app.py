@@ -522,15 +522,56 @@ elif menu == "Policy Generator":
             st.markdown("### ✏️ Edit Your Policy")
             edited = st.text_area("Modify the policy text below:", value=st.session_state["full_policy_draft"], height=400, key="full_policy_editor")
     
-            col1, col2 = st.columns(2)
+            col1, col2, col3, col4 = st.columns(4)
+
+            # --- Save in Session ---
             with col1:
-                if st.button("💾 Save Draft"):
+                if st.button("💾 Save (Session Only)"):
                     st.session_state["saved_full_policy"] = edited
-                    st.success("Draft saved in memory (session only).")
-    
+                    st.success("Draft saved temporarily in session.")
+            
+            # --- Export to .docx ---
             with col2:
-                if st.button("⬇️ Export to Word/PDF"):
-                    st.info("Export functionality will be available soon.")
+                if st.button("⬇️ Export to Word (.docx)"):
+                    doc = Document()
+                    doc.add_heading(f"{policy_type} - Generated Policy", level=1)
+                    for para in edited.split("\n"):
+                        doc.add_paragraph(para)
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+                    st.download_button(
+                        label="📄 Download Word File",
+                        data=buffer,
+                        file_name=f"{org_name.replace(' ', '_')}_DPDPA_policy.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+            
+            # --- Export to .txt ---
+            with col3:
+                if st.button("⬇️ Export to TXT"):
+                    st.download_button(
+                        label="📄 Download TXT File",
+                        data=edited,
+                        file_name=f"{org_name.replace(' ', '_')}_DPDPA_policy.txt",
+                        mime="text/plain"
+                    )
+            
+            # --- Save Draft to JSON ---
+            with col4:
+                if st.button("💾 Save to File (.json)"):
+                    draft_data = {
+                        "policy": edited,
+                        "timestamp": str(datetime.datetime.now()),
+                        "org_name": org_name,
+                        "policy_type": policy_type
+                    }
+                    st.download_button(
+                        label="📁 Download Draft as JSON",
+                        data=json.dumps(draft_data, indent=2),
+                        file_name=f"{org_name.replace(' ', '_')}_DPDPA_draft.json",
+                        mime="application/json"
+                    )
 
     with tab2:
         st.subheader("Section-wise Generator")
