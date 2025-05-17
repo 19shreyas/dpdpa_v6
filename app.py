@@ -387,7 +387,7 @@ elif menu == "Policy Generator":
         "GPT Draft Assistant", "Saved Drafts"])
 
     with tab1:
-        st.markdown("### Generate a DPDPA-Compliant Privacy/Retention Policy")
+        st.markdown("### Generate a DPDPA-Compliant Policy")
         st.caption("All fields marked with * are mandatory. This tool creates a draft policy aligned with India's Digital Personal Data Protection Act, 2023.")
     
         # --- Group 1: Organization Details ---
