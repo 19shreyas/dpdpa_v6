@@ -387,11 +387,11 @@ elif menu == "Policy Generator":
         "GPT Draft Assistant", "Saved Drafts"])
 
     with tab1:
-        st.markdown("### 🧾 Generate a DPDPA-Compliant Privacy/Retention Policy")
+        st.markdown("###Generate a DPDPA-Compliant Privacy/Retention Policy")
         st.caption("All fields marked with * are mandatory. This tool creates a draft policy aligned with India's Digital Personal Data Protection Act, 2023.")
     
         # --- Group 1: Organization Details ---
-        with st.expander("🏢 Organization Details", expanded=True):
+        with st.expander("Organization Details", expanded=True):
             st.markdown("**Policy Type***  \n_Select the kind of policy you are generating._")
             policy_type = st.selectbox(" ", [
                 "-- Select Policy Type --", "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy"
@@ -407,7 +407,7 @@ elif menu == "Policy Generator":
             sector_custom = st.text_input("Custom sector (if not listed)", key="sector_custom")
 
         # --- Group 2: Data Collection & Target Audience ---
-        with st.expander("📊 Data Collection Details", expanded=True):
+        with st.expander("Data Collection Details", expanded=True):
             st.markdown("**Select Data Types Collected***  \n_Choose the categories of personal data you collect. Required under Sections 6 & 7._")
             data_types_common = st.multiselect(" ", [
                 "Name", "Email", "Phone Number", "Biometric", "Health Records", "Location Data",
@@ -421,7 +421,7 @@ elif menu == "Policy Generator":
             children_data = st.radio(" ", ["No", "Yes"], horizontal=True, key="children_data")
 
         # --- Group 3: Legal Basis & Consent ---
-        with st.expander("⚖️ Legal Basis for Processing", expanded=True):
+        with st.expander("Legal Basis for Processing", expanded=True):
             st.markdown("**Lawful Purpose for Data Collection***  \n_Why are you collecting personal data? e.g., Delivering services, fraud prevention._")
             lawful_purpose = st.text_input(" ", key="lawful_purpose")
         
@@ -436,7 +436,7 @@ elif menu == "Policy Generator":
             ], key="legitimate_use")
 
         # --- Group 4: Retention, Security, and Sharing ---
-        with st.expander("📁 Retention & Data Sharing", expanded=False):
+        with st.expander("Retention & Data Sharing", expanded=False):
             st.markdown("**Data Retention Duration***  \n_How long do you retain data? Must be justified under Section 8(7)._")
             retention_period = st.text_input(" ", key="retention_period")
         
@@ -444,12 +444,12 @@ elif menu == "Policy Generator":
             cross_border = st.radio(" ", ["Yes", "No"], horizontal=True, key="cross_border")
     
         # --- Group 5: Grievance Contact Info ---
-        with st.expander("📨 Grievance Redressal Contact", expanded=False):
+        with st.expander("Grievance Redressal Contact", expanded=False):
             st.markdown("**Grievance Officer Contact Email***  \n_As per Section 10, provide a contact for complaints or data requests._")
             grievance_email = st.text_input(" ", key="grievance_email")
 
         # --- Generate Button ---
-        if st.button("🚀 Generate DPDPA-Compliant Policy with GPT"):
+        if st.button("Generate DPDPA-Compliant Policy with GPT"):
             errors = []
             if policy_type == "-- Select Policy Type --":
                 errors.append("Policy Type")
@@ -521,7 +521,7 @@ elif menu == "Policy Generator":
         # --- Output Editor ---
         if "full_policy_draft" in st.session_state:
             st.markdown("---")
-            st.markdown("### ✏️ Edit Your Policy")
+            st.markdown("###Edit Your Policy")
             edited = st.text_area("Modify the policy text below:", value=st.session_state["full_policy_draft"], height=400, key="full_policy_editor")
     
             col1, col2, col3, col4 = st.columns(4)
@@ -577,7 +577,7 @@ elif menu == "Policy Generator":
 
     with tab2:
         with tab2:
-            st.markdown("### 🧩 Generate a Specific Section of Your Policy")
+            st.markdown("###Generate a Specific Section of Your Policy")
             st.caption("Use this tool to draft a single section aligned with a DPDPA requirement.")
         
             # --- Section Selection ---
@@ -606,7 +606,7 @@ elif menu == "Policy Generator":
             org_context = st.text_input("", key="section_context")
         
             # --- Generate Button ---
-            if st.button("🚀 Generate Section"):
+            if st.button("Generate Section"):
                 if not custom_instruction.strip():
                     st.warning("Please describe what you want GPT to generate.")
                 else:
@@ -635,13 +635,13 @@ elif menu == "Policy Generator":
             # --- Output Editor ---
             if "section_output" in st.session_state:
                 st.markdown("---")
-                st.markdown("### ✏️ Edit Your Section")
+                st.markdown("### Edit Your Section")
                 edited_section = st.text_area("You can make final changes below:", value=st.session_state["section_output"], height=300, key="section_editor")
         
                 col1, col2, col3, col4 = st.columns(4)
         
                 with col1:
-                    if st.button("💾 Save (Session Only)", key="save_section"):
+                    if st.button("Save (Session Only)", key="save_section"):
                         st.session_state["saved_section"] = edited_section
                         st.success("Section saved temporarily in session.")
         
@@ -713,7 +713,7 @@ elif menu == "Policy Generator":
         lifecycle_context = st.text_input("", key="lifecycle_context")
     
         # --- Generate Section ---
-        if st.button("🚀 Generate Lifecycle Policy Section"):
+        if st.button("Generate Lifecycle Policy Section"):
             if not lifecycle_prompt.strip():
                 st.warning("Please enter or confirm the prompt.")
             else:
@@ -738,7 +738,7 @@ elif menu == "Policy Generator":
         # --- Output Area ---
         if "lifecycle_output" in st.session_state:
             st.markdown("---")
-            st.markdown(f"### ✏️ Edit Lifecycle Section: {lifecycle_stage}")
+            st.markdown(f"### Edit Lifecycle Section: {lifecycle_stage}")
             edited_lifecycle = st.text_area("Modify the generated content below:", value=st.session_state["lifecycle_output"], height=300, key="lifecycle_editor")
     
             col1, col2, col3, col4 = st.columns(4)
@@ -790,7 +790,7 @@ elif menu == "Policy Generator":
 
 
     with tab4:
-        st.markdown("### 🪄 GPT-Assisted Draft Builder")
+        st.markdown("###GPT-Assisted Draft Builder")
         st.caption("Describe any policy section or clause you'd like GPT to help you draft. This is not limited to DPDPA or lifecycle templates.")
     
         # --- Prompt Textbox ---
@@ -809,7 +809,7 @@ elif menu == "Policy Generator":
             category_tag = st.text_input("Data Category", help="e.g., Biometric, Financial")
     
         # --- Generate Button ---
-        if st.button("✨ Generate with GPT", key="gpt_draft_btn"):
+        if st.button("Generate with GPT", key="gpt_draft_btn"):
             if not free_prompt.strip():
                 st.warning("Please enter a prompt.")
             else:
@@ -835,7 +835,7 @@ elif menu == "Policy Generator":
         # --- Editable Output Area ---
         if "gpt_draft_output" in st.session_state:
             st.markdown("---")
-            st.markdown("### ✏️ Edit Your Draft")
+            st.markdown("###Edit Your Draft")
             edited_gpt_draft = st.text_area("Make final changes below:", value=st.session_state["gpt_draft_output"], height=300, key="gpt_draft_editor")
     
             col1, col2, col3, col4 = st.columns(4)
@@ -888,7 +888,7 @@ elif menu == "Policy Generator":
 
 
     with tab5:
-        st.markdown("### 🗂️ View & Manage Saved Drafts")
+        st.markdown("###View & Manage Saved Drafts")
         st.caption("This page lets you view, edit, rename, export, or delete any draft stored in your session or uploaded from a file.")
     
         # --- Session State: Collect all saved drafts ---
@@ -899,7 +899,7 @@ elif menu == "Policy Generator":
                 saved_drafts[label] = st.session_state[key]
     
         # --- Upload JSON Draft ---
-        st.markdown("#### 📤 Upload a JSON Draft (from export)")
+        st.markdown("#### Upload a JSON Draft (from export)")
         uploaded = st.file_uploader("Upload JSON file", type="json")
         if uploaded:
             try:
@@ -917,7 +917,7 @@ elif menu == "Policy Generator":
             selected = st.selectbox("📋 Select a draft to view/edit", draft_names)
             current_draft = saved_drafts[selected]
     
-            st.markdown(f"#### ✏️ Editing Draft: `{selected}`")
+            st.markdown(f"#### Editing Draft: `{selected}`")
             edited_draft = st.text_area("You can update the draft content below:", value=current_draft, height=300, key="edit_draft")
     
             col1, col2, col3, col4 = st.columns(4)
