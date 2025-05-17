@@ -385,56 +385,105 @@ elif menu == "Policy Generator":
         "GPT Draft Assistant", "Saved Drafts"])
 
     with tab1:
-        st.markdown("### 🧾 Generate a Full Privacy/Retention Policy")
-        st.caption("Generate a complete policy draft using GPT. You can customize it based on organization details.")
+        st.markdown("### 🧾 Generate a DPDPA-Compliant Privacy/Retention Policy")
+        st.caption("This generates a policy draft aligned with the Digital Personal Data Protection Act (DPDPA), 2023.")
     
-        with st.expander("🛠️ Input Settings", expanded=True):
+        # --- Group 1: Organization Details ---
+        with st.expander("🏢 Organization Details", expanded=True):
             policy_type = st.selectbox("Policy Type", [
                 "-- Select Policy Type --", "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy"
             ])
-    
-            org_name = st.text_input("Enter Organization Name")
-    
-            # Sector: Dropdown + Optional Custom
+            org_name = st.text_input("Organization Name")
             sector_dropdown = st.selectbox("Select Sector", [
                 "-- Select Sector --", "Healthcare", "Finance", "Education", "Retail", "Government", "Technology", "Telecom"
             ])
             sector_custom = st.text_input("Or enter custom sector (optional)")
+            sector_final = sector_custom if sector_custom else sector_dropdown
     
-            # Data Types: Multiselect + Optional Custom
-            data_types_common = st.multiselect("Select Data Types Handled", [
-                "Name", "Email", "Phone Number", "Biometric", "Health Records", "Location Data", "Financial Information", "Browsing Data"
+        # --- Group 2: Data Collection & Target Audience ---
+        with st.expander("📊 Data Collection Details", expanded=True):
+            data_types_common = st.multiselect("Select Data Types Collected", [
+                "Name", "Email", "Phone Number", "Biometric", "Health Records", "Location Data",
+                "Financial Information", "Browsing Data"
             ])
             data_types_custom = st.text_input("Or enter custom data types (comma separated)")
+            data_types_final = data_types_common + [dt.strip() for dt in data_types_custom.split(",") if dt.strip()]
+            children_data = st.radio("Is this policy applicable to children under 18?", ["No", "Yes"], horizontal=True)
     
-        generate_clicked = st.button("🚀 Generate Policy with GPT")
+        # --- Group 3: Legal Basis & Consent ---
+        with st.expander("⚖️ Legal Basis for Processing", expanded=True):
+            lawful_purpose = st.text_input("Lawful Purpose for Data Collection", placeholder="e.g., Delivering personalized services, fraud prevention")
+            consent_type = st.selectbox("Type of Consent Taken", [
+                "Explicit Consent", "Deemed Consent", "Notice Only (limited use cases)"
+            ])
+            legitimate_use = st.multiselect("Special Purpose under Section 7 (optional)", [
+                "Employment Purposes", "Medical Emergency", "Government Function", "Disaster Response", "Public Interest", "None of the Above"
+            ])
     
-        if generate_clicked:
+        # --- Group 4: Retention, Security, and Sharing ---
+        with st.expander("📁 Retention & Data Sharing", expanded=False):
+            retention_period = st.text_input("Data Retention Duration", placeholder="e.g., 6 months, until service withdrawal")
+            cross_border = st.radio("Is Data Shared Internationally?", ["Yes", "No"], horizontal=True)
+    
+        # --- Group 5: Grievance Contact Info ---
+        with st.expander("📨 Grievance Redressal", expanded=False):
+            grievance_email = st.text_input("Grievance Officer Contact Email", placeholder="e.g., dpo@yourcompany.com")
+    
+        # --- Generate Button ---
+        if st.button("🚀 Generate DPDPA-Compliant Policy with GPT"):
             if policy_type == "-- Select Policy Type --" or (sector_dropdown == "-- Select Sector --" and not sector_custom):
-                st.warning("Please select a valid policy type and provide a sector.")
+                st.warning("Please select a valid policy type and provide the sector.")
             else:
                 sector_final = sector_custom if sector_custom else sector_dropdown
                 data_types_final = data_types_common + [dt.strip() for dt in data_types_custom.split(",") if dt.strip()]
+                special_uses = ", ".join(legitimate_use) if legitimate_use else "None"
     
                 with st.spinner("Generating policy... please wait."):
                     prompt = f"""
-    You are a policy drafting assistant. Create a comprehensive {policy_type.lower()}.
+    You are a legal policy assistant. Draft a comprehensive, DPDPA-compliant {policy_type.lower()} for the following organization.
     
-    Include:
-    - Organization Name: {org_name or 'Not specified'}
+    **Organization Details**:
+    - Name: {org_name or 'Not specified'}
     - Sector: {sector_final}
-    - Data Types Handled: {", ".join(data_types_final) if data_types_final else "Not specified"}
     
-    Include standard sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, Security Measures, and Contact Info. 
-    Use professional, plain English. Output only the draft text.
+    **Data Handling**:
+    - Data Types Collected: {", ".join(data_types_final) if data_types_final else 'Not specified'}
+    - Applicable to Children (<18): {children_data}
+    - Shared Internationally: {cross_border}
+    
+    **Legal Basis**:
+    - Lawful Purpose: {lawful_purpose or 'Not specified'}
+    - Consent Type: {consent_type}
+    - Special Use Cases (Sec 7): {special_uses}
+    
+    **Retention & Redressal**:
+    - Retention Period: {retention_period or 'Not specified'}
+    - Grievance Contact: {grievance_email or 'Not specified'}
+    
+    **Compliance Requirements**:
+    Ensure the policy covers all obligations under the Digital Personal Data Protection Act, 2023 (India), including:
+    - Lawful purpose (Sec 4)
+    - Informed consent (Sec 6)
+    - Notice obligations (Sec 5)
+    - Grievance handling (Sec 10)
+    - Data accuracy (Sec 8.3)
+    - Security safeguards (Sec 8.5)
+    - Erasure after purpose is fulfilled or consent withdrawn (Sec 8.7)
+    - Special clauses for children (Sec 9) if applicable
+    - International transfer declaration (Sec 16)
+    
+    Write the policy in clear, professional English with practical sections like: Purpose, Scope, Data Types, Lawful Use, Consent, Security, Retention, Rights, Grievance Redressal, Contact.
+    
+    Return only the policy draft (no disclaimers or titles).
                     """
                     try:
                         draft = call_gpt_text(prompt)
                         st.session_state["full_policy_draft"] = draft
-                        st.success("✅ Draft generated successfully!")
+                        st.success("✅ DPDPA-compliant draft generated successfully!")
                     except Exception as e:
                         st.error(f"❌ GPT Error: {e}")
     
+        # --- Output Editor ---
         if "full_policy_draft" in st.session_state:
             st.markdown("---")
             st.markdown("### ✏️ Edit Your Policy")
@@ -449,6 +498,7 @@ elif menu == "Policy Generator":
             with col2:
                 if st.button("⬇️ Export to Word/PDF"):
                     st.info("Export functionality will be available soon.")
+
 
     with tab2:
         st.subheader("Section-wise Generator")
