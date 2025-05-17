@@ -418,7 +418,7 @@ elif menu == "Policy Generator":
             ])
         
             st.markdown("Custom data types (comma separated)")
-            data_types_custom = st.text_input("")
+            data_types_custom = st.text_input("", key="custom_data_types")
         
             st.markdown("**Is this policy applicable to children under 18?**")
             st.caption("If your services are used by minors, DPDPA Section 9 applies.")
