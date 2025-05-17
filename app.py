@@ -687,11 +687,107 @@ elif menu == "Policy Generator":
                         )
 
     with tab3:
-        st.subheader("Lifecycle-wise Template")
-        st.markdown("Fill stage-specific privacy info:")
-        stages = ["Collection", "Processing", "Storage", "Sharing", "Erasure"]
-        for stage in stages:
-            st.text_area(f"{stage} Stage", key=stage)
+        st.markdown("### 🔄 Generate Policy by Data Lifecycle Stage")
+        st.caption("Use this to generate a specific part of your privacy or retention policy aligned with how data is collected, processed, stored, or shared.")
+    
+        # --- Lifecycle Options ---
+        lifecycle_options = {
+            "Data Collection": "Describe what data is collected, from whom, how, and with what consent.",
+            "Data Processing": "Explain the purpose and method of processing the data, along with any automation or profiling.",
+            "Data Storage": "Detail where data is stored, for how long, and the technical and organizational safeguards.",
+            "Data Sharing": "Outline what data is shared, with whom (internal or third party), and under what agreements."
+        }
+    
+        st.markdown("**Select Lifecycle Stage***")
+        lifecycle_stage = st.selectbox("", list(lifecycle_options.keys()))
+    
+        # --- Suggested Template ---
+        st.markdown("**Template Prompt Suggestion**")
+        st.caption("Modify or use the suggested wording below.")
+        default_instruction = lifecycle_options[lifecycle_stage]
+        lifecycle_prompt = st.text_area("", value=default_instruction, height=100, key="lifecycle_prompt")
+    
+        # --- Optional Context ---
+        st.markdown("**Add Organizational Context (optional)**")
+        st.caption("Include platform name, sector, audience, or known risks (e.g., fintech app handling financial data).")
+        lifecycle_context = st.text_input("", key="lifecycle_context")
+    
+        # --- Generate Section ---
+        if st.button("🚀 Generate Lifecycle Policy Section"):
+            if not lifecycle_prompt.strip():
+                st.warning("Please enter or confirm the prompt.")
+            else:
+                with st.spinner("Generating section..."):
+                    lifecycle_prompt_text = f"""
+    You are a policy assistant generating a data privacy policy section for a specific lifecycle stage.
+    
+    **Lifecycle Stage**: {lifecycle_stage}
+    **Instruction**: {lifecycle_prompt.strip()}
+    {f"Context: {lifecycle_context.strip()}" if lifecycle_context.strip() else ''}
+    
+    The section should be written in professional, legally sound English and suitable for direct inclusion in a privacy or retention policy. Keep it DPDPA-aligned where applicable.
+    Only output the draft content, no explanations or headings.
+                    """
+                    try:
+                        lifecycle_output = call_gpt_text(lifecycle_prompt_text)
+                        st.session_state["lifecycle_output"] = lifecycle_output
+                        st.success("✅ Section generated successfully!")
+                    except Exception as e:
+                        st.error(f"❌ GPT Error: {e}")
+    
+        # --- Output Area ---
+        if "lifecycle_output" in st.session_state:
+            st.markdown("---")
+            st.markdown(f"### ✏️ Edit Lifecycle Section: {lifecycle_stage}")
+            edited_lifecycle = st.text_area("Modify the generated content below:", value=st.session_state["lifecycle_output"], height=300, key="lifecycle_editor")
+    
+            col1, col2, col3, col4 = st.columns(4)
+    
+            with col1:
+                if st.button("💾 Save (Session Only)", key="save_lifecycle"):
+                    st.session_state["saved_lifecycle"] = edited_lifecycle
+                    st.success("Saved in session.")
+    
+            with col2:
+                if st.button("⬇️ Export as Word", key="export_lifecycle_docx"):
+                    doc = Document()
+                    doc.add_heading(f"{lifecycle_stage} Policy", level=1)
+                    for para in edited_lifecycle.split("\n"):
+                        doc.add_paragraph(para)
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+                    st.download_button(
+                        label="📄 Download Word File",
+                        data=buffer,
+                        file_name=f"{lifecycle_stage.replace(' ', '_')}_Policy.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+    
+            with col3:
+                if st.button("⬇️ Export as TXT", key="export_lifecycle_txt"):
+                    st.download_button(
+                        label="📄 Download TXT File",
+                        data=edited_lifecycle,
+                        file_name=f"{lifecycle_stage.replace(' ', '_')}_Policy.txt",
+                        mime="text/plain"
+                    )
+    
+            with col4:
+                if st.button("💾 Save as JSON", key="export_lifecycle_json"):
+                    lifecycle_data = {
+                        "stage": lifecycle_stage,
+                        "prompt": lifecycle_prompt,
+                        "context": lifecycle_context,
+                        "content": edited_lifecycle
+                    }
+                    st.download_button(
+                        label="📁 Download JSON Draft",
+                        data=json.dumps(lifecycle_data, indent=2),
+                        file_name=f"{lifecycle_stage.replace(' ', '_')}_Draft.json",
+                        mime="application/json"
+                    )
+
 
     with tab4:
         st.subheader("GPT-Assisted Draft Builder")
