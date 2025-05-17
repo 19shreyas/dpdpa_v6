@@ -4,7 +4,9 @@ import json
 import pandas as pd
 import re
 import fitz
-import io               
+import io
+import datetime
+from docx import Document              
 
 # --- OpenAI Setup ---
 api_key = st.secrets["OPENAI_API_KEY"]
