@@ -429,7 +429,8 @@ elif menu == "Policy Generator":
         with st.expander("⚖️ Legal Basis for Processing", expanded=True):
             st.markdown("**Lawful Purpose for Data Collection***")
             st.caption("Why are you collecting personal data? e.g., Delivering services, fraud prevention.")
-            lawful_purpose = st.text_input("")
+            lawful_purpose = st.text_input("", key="lawful_purpose")
+
         
             st.markdown("**Type of Consent Taken***")
             st.caption("How you collect consent: Explicit (opt-in), Deemed (by use), or Notice-only.")
@@ -448,7 +449,7 @@ elif menu == "Policy Generator":
         with st.expander("📁 Retention & Data Sharing", expanded=False):
             st.markdown("**Data Retention Duration***")
             st.caption("How long you store personal data. Must be justified under Section 8(7).")
-            retention_period = st.text_input("")
+            retention_period = st.text_input("", key="retention_period")
         
             st.markdown("**Is Data Shared Internationally?***")
             st.caption("Required under Section 16. Mention if data is processed outside India.")
@@ -459,7 +460,7 @@ elif menu == "Policy Generator":
         with st.expander("📨 Grievance Redressal Contact", expanded=False):
             st.markdown("**Grievance Officer Contact Email***")
             st.caption("As per Section 10, provide a contact for complaints or data requests.")
-            grievance_email = st.text_input("")
+            grievance_email = st.text_input("", key="grievance_email")
 
     
         # --- Generate Button ---
