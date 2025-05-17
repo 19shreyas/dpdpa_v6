@@ -385,53 +385,57 @@ elif menu == "Policy Generator":
         "GPT Draft Assistant", "Saved Drafts"])
 
     with tab1:
-        st.subheader("🧾 Full Policy Generator")
+        st.markdown("### 🧾 Generate a Full Privacy/Retention Policy")
+        st.caption("Generate a complete policy draft using GPT. You can customize it based on organization details.")
     
-        # --- Input Fields ---
-        policy_type = st.selectbox("Select Policy Type", [
-            "Privacy Policy", "Retention Policy", "Data Protection Policy", "Security Policy", "Other"
-        ])
-        org_name = st.text_input("Organization Name (optional)")
-        sector = st.text_input("Sector (optional)")
-        data_types = st.text_input("Data Types Handled (optional)")
+        with st.expander("🛠️ Input Settings", expanded=True):
+            policy_type = st.selectbox("Policy Type", [
+                "Privacy Policy", "Retention Policy", "Security Policy", "Data Protection Policy", "Other"
+            ])
+            org_name = st.text_input("Organization Name", placeholder="e.g., Acme Corp")
+            sector = st.text_input("Sector", placeholder="e.g., Healthcare, Finance")
+            data_types = st.text_input("Data Types Handled", placeholder="e.g., Email, Biometric, Financial data")
     
-        # --- Generate Button ---
-        if st.button("🚀 Generate Full Policy with GPT"):
-            with st.spinner("Generating your policy draft..."):
+        generate_clicked = st.button("🚀 Generate Policy with GPT")
+    
+        if generate_clicked:
+            with st.spinner("Generating policy... please wait."):
                 prompt = f"""
-    You are a privacy policy expert. Draft a comprehensive {policy_type.lower()} for an organization.
+    You are a policy drafting assistant. Create a comprehensive {policy_type.lower()}.
     
-    Organization Name: {org_name if org_name else 'Not specified'}
-    Sector: {sector if sector else 'Not specified'}
-    Data Types Handled: {data_types if data_types else 'Not specified'}
+    Include the following details:
+    - Organization Name: {org_name if org_name else 'Not specified'}
+    - Sector: {sector if sector else 'Not specified'}
+    - Data Types Handled: {data_types if data_types else 'Not specified'}
     
-    Include standard sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, and Contact.
-    Write in clear, professional language.
-    Return the policy as plain text.
+    The policy should include common sections such as Purpose, Scope, Consent, Data Rights, Retention, Sharing, Security Measures, and Contact Information.
+    
+    Return the policy in plain professional English without headings like 'GPT Response'. Only return the draft text.
                 """.strip()
     
                 try:
                     draft = call_gpt_text(prompt)
                     st.session_state["full_policy_draft"] = draft
+                    st.success("✅ Draft generated successfully!")
                 except Exception as e:
-                    st.error(f"GPT Error: {e}")
+                    st.error(f"❌ GPT Error: {e}")
     
-        # --- Show Output if Available ---
         if "full_policy_draft" in st.session_state:
-            st.markdown("### ✏️ Generated Policy (Editable)")
-            edited_draft = st.text_area("Edit Your Policy Below:", value=st.session_state["full_policy_draft"], height=400, key="full_policy_editor")
+            st.markdown("### ✏️ Edit Your Policy")
+            edited = st.text_area("You can modify the generated policy here before saving/exporting:",
+                                  value=st.session_state["full_policy_draft"],
+                                  height=400, key="full_policy_editor")
     
             col1, col2 = st.columns(2)
-    
             with col1:
                 if st.button("💾 Save Draft"):
-                    # Placeholder for actual save logic
-                    st.success("Draft saved successfully!")
+                    st.session_state["saved_full_policy"] = edited
+                    st.success("Draft saved in memory (session).")
     
             with col2:
                 if st.button("⬇️ Export to Word/PDF"):
-                    # Placeholder for export
-                    st.info("Export functionality is coming soon.")
+                    st.info("Export functionality will be added in next release.")
+
 
 
     with tab2:
