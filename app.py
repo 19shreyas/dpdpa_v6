@@ -368,7 +368,7 @@ menu = st.sidebar.radio("", [
 st.sidebar.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
 st.sidebar.markdown("""
     <div style='padding: 0px 12px 0px 0px;'>
-        <img src='https://i.postimg.cc/j2dv9kZ2/EY-Parthenon-idp-Wq1a8hl-0.png' width='200'>
+        <img src='https://i.postimg.cc/c184MwXH/EY-Parthenon-logo.png' width='200'>
     </div>
 """, unsafe_allow_html=True)
 # --- Homepage ---
